@@ -5,6 +5,8 @@ import 'package:uas_prakpemrogramanmobile/providers/auth_provider.dart';
 import 'package:uas_prakpemrogramanmobile/providers/product_provider.dart';
 import 'package:uas_prakpemrogramanmobile/providers/category_provider.dart';
 import 'package:uas_prakpemrogramanmobile/providers/cart_provider.dart';
+import 'package:uas_prakpemrogramanmobile/providers/order_provider.dart';
+import 'package:uas_prakpemrogramanmobile/providers/admin_provider.dart';
 import 'package:uas_prakpemrogramanmobile/screens/splash/splash_screen.dart';
 
 // TODO: app.dart
@@ -21,6 +23,8 @@ class MobileMartApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
       child: MaterialApp(
         title: 'Mobile Mart',

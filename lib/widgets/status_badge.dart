@@ -1,15 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
 
-// TODO: widgets/status_badge.dart
-// Tanggung jawab: Menampilkan badge status pesanan dengan warna yang sesuai (Pending: Orange,
-// Processing: Blue, Shipped: Purple, Delivered: Green, Cancelled: Red).
 class StatusBadge extends StatelessWidget {
-  const StatusBadge({super.key});
+  final String status;
+
+  const StatusBadge({
+    super.key,
+    required this.status,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Chip(
-      label: Text('Pending'),
+    Color backgroundColor;
+    Color textColor = Colors.white;
+
+    switch (status.toLowerCase()) {
+      case 'pending':
+        backgroundColor = AppColors.statusPending;
+        break;
+      case 'processing':
+        backgroundColor = AppColors.statusProcessing;
+        break;
+      case 'shipped':
+        backgroundColor = AppColors.statusShipped;
+        break;
+      case 'delivered':
+        backgroundColor = AppColors.statusDelivered;
+        break;
+      case 'cancelled':
+        backgroundColor = AppColors.statusCancelled;
+        break;
+      default:
+        backgroundColor = AppColors.secondary;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          color: textColor,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }

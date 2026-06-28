@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:uas_prakpemrogramanmobile/core/services/storage_service.dart';
 import 'package:uas_prakpemrogramanmobile/models/order_model.dart';
 import 'package:uas_prakpemrogramanmobile/services/order_service.dart';
 
@@ -56,6 +58,31 @@ class OrderProvider with ChangeNotifier {
       );
 
       final List<OrderModel> fetchedOrders = result['orders'];
+      
+      // Overwrite status with locally updated status if it exists in SharedPreferences
+      try {
+        final listJson = StorageService.getString('local_checkout_orders') ?? '[]';
+        final List<dynamic> decoded = jsonDecode(listJson);
+        final localMap = {for (var item in decoded) item['id'] as String: item['status'] as String};
+        for (var i = 0; i < fetchedOrders.length; i++) {
+          final localStatus = localMap[fetchedOrders[i].id];
+          if (localStatus != null) {
+            final old = fetchedOrders[i];
+            fetchedOrders[i] = OrderModel(
+              id: old.id,
+              status: localStatus,
+              total: old.total,
+              shippingAddress: old.shippingAddress,
+              note: old.note,
+              createdAt: old.createdAt,
+              items: old.items,
+              customerName: old.customerName,
+              customerEmail: old.customerEmail,
+            );
+          }
+        }
+      } catch (_) {}
+
       _currentPage = result['page'] + 1;
       _totalPages = result['totalPages'];
       _hasMore = result['page'] < _totalPages;
@@ -90,7 +117,30 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _detailOrder = await _orderService.fetchOrderDetail(orderId);
+      final order = await _orderService.fetchOrderDetail(orderId);
+      
+      // Override status if local update exists in SharedPreferences
+      String finalStatus = order.status;
+      try {
+        final listJson = StorageService.getString('local_checkout_orders') ?? '[]';
+        final List<dynamic> decoded = jsonDecode(listJson);
+        final localOrder = decoded.firstWhere((o) => o['id'] == order.id, orElse: () => null);
+        if (localOrder != null) {
+          finalStatus = localOrder['status'];
+        }
+      } catch (_) {}
+
+      _detailOrder = OrderModel(
+        id: order.id,
+        status: finalStatus,
+        total: order.total,
+        shippingAddress: order.shippingAddress,
+        note: order.note,
+        createdAt: order.createdAt,
+        items: order.items,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+      );
       _errorDetail = null;
     } catch (e) {
       _errorDetail = e.toString();
@@ -110,11 +160,21 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _orderService.createOrder(
+      final order = await _orderService.createOrder(
         address: address,
         phone: phone,
         notes: notes,
       );
+      
+      // Save order to SharedPreferences for offline admin sync
+      try {
+        final listJson = StorageService.getString('local_checkout_orders') ?? '[]';
+        final List<dynamic> decoded = jsonDecode(listJson);
+        decoded.insert(0, order.toJson());
+        await StorageService.saveString('local_checkout_orders', jsonEncode(decoded));
+      } catch (e) {
+        print('Failed to save order to local storage: $e');
+      }
       
       // Refresh list after successful creation
       await fetchOrders(refresh: true);

@@ -20,13 +20,28 @@ class CartItemModel {
   });
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
+    double parsedPrice = double.tryParse(json['price'].toString()) ?? 0.0;
+    
+    // If price is 0 or missing, try to get it from nested product
+    if ((parsedPrice == 0.0) && json['product'] is Map<String, dynamic>) {
+       parsedPrice = double.tryParse(json['product']['price'].toString()) ?? 0.0;
+    }
+    
+    int qty = json['quantity'] ?? 0;
+    double parsedSubtotal = double.tryParse(json['subtotal'].toString()) ?? 0.0;
+    
+    // If subtotal is 0 or missing, calculate it manually
+    if (parsedSubtotal == 0.0) {
+      parsedSubtotal = parsedPrice * qty;
+    }
+
     return CartItemModel(
       id: json['id'] ?? '',
       cartId: json['cart_id'] ?? json['cartId'] ?? '',
       productId: json['product_id'] ?? json['productId'] ?? '',
-      quantity: json['quantity'] ?? 0,
-      price: double.tryParse(json['price'].toString()) ?? 0.0,
-      subtotal: double.tryParse(json['subtotal'].toString()) ?? 0.0,
+      quantity: qty,
+      price: parsedPrice,
+      subtotal: parsedSubtotal,
       product: json['product'] != null ? ProductModel.fromJson(json['product']) : null,
     );
   }

@@ -18,6 +18,7 @@ class ProductProvider with ChangeNotifier {
   bool _isLoadingDetail = false;
   bool _isLoadingReviews = false;
   bool _isAddingReview = false;
+  bool _isDeletingReview = false;
 
   String? _errorMessage;
   String? _errorDetail;
@@ -42,6 +43,7 @@ class ProductProvider with ChangeNotifier {
   bool get isLoadingDetail => _isLoadingDetail;
   bool get isLoadingReviews => _isLoadingReviews;
   bool get isAddingReview => _isAddingReview;
+  bool get isDeletingReview => _isDeletingReview;
 
   String? get errorMessage => _errorMessage;
   String? get errorDetail => _errorDetail;
@@ -157,6 +159,7 @@ class ProductProvider with ChangeNotifier {
       _reviews = result['reviews'];
       _errorReviews = null;
     } catch (e) {
+      _reviews = [];
       _errorReviews = e.toString();
     } finally {
       _isLoadingReviews = false;
@@ -170,13 +173,15 @@ class ProductProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _reviewService.addProductReview(
+      final newReview = await _reviewService.addProductReview(
         productId,
         rating: rating,
         comment: comment,
       );
+
+      _reviews.insert(0, newReview);
+      notifyListeners();
       
-      // Successfully added! Refresh reviews and detail to update ratings/reviews count
       await fetchProductReviews(productId, refresh: true);
       await fetchProductDetail(productId);
       
@@ -186,7 +191,28 @@ class ProductProvider with ChangeNotifier {
     } catch (e) {
       _isAddingReview = false;
       notifyListeners();
-      rethrow; // Rethrow to let the UI display exception message in snackbar
+      rethrow;
+    }
+  }
+
+  // Delete Own Review
+  Future<bool> deleteReview(String productId, String reviewId) async {
+    _isDeletingReview = true;
+    notifyListeners();
+
+    try {
+      await _reviewService.deleteReview(reviewId);
+      
+      await fetchProductReviews(productId, refresh: true);
+      await fetchProductDetail(productId);
+      
+      _isDeletingReview = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isDeletingReview = false;
+      notifyListeners();
+      rethrow;
     }
   }
 }

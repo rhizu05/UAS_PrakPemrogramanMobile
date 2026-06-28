@@ -25,15 +25,15 @@ class ApiService {
 
     if (requireAuth) {
       final token = StorageService.getToken();
-      print('ApiService: Token retrieved from storage: "$token"');
+      // print('ApiService: Token retrieved from storage: "$token"');
       if (token != null && token.isNotEmpty) {
         headers['Authorization'] = 'Bearer $token';
       } else {
-        print('ApiService: WARNING! Token is empty or null!');
+        // print('ApiService: WARNING! Token is empty or null!');
       }
     }
 
-    print('ApiService: Request Headers: $headers');
+    // print('ApiService: Request Headers: $headers');
     return headers;
   }
 

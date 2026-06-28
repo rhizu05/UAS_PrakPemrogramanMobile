@@ -19,18 +19,31 @@ class OrderItemModel {
     // Extract product name and image from nested product object if available
     String name = json['product_name'] ?? json['productName'] ?? '';
     String? imgUrl;
+    double productPrice = 0.0;
     if (json['product'] is Map<String, dynamic>) {
       name = json['product']['name'] ?? name;
       imgUrl = json['product']['image_url'] ?? json['product']['imageUrl'];
+      productPrice = double.tryParse(json['product']['price'].toString()) ?? 0.0;
+    }
+
+    double parsedPrice = double.tryParse(json['price'].toString()) ?? 0.0;
+    if (parsedPrice == 0.0 && productPrice > 0.0) {
+      parsedPrice = productPrice;
+    }
+
+    int qty = json['quantity'] ?? 0;
+    double parsedSubtotal = double.tryParse(json['subtotal'].toString()) ?? 0.0;
+    if (parsedSubtotal == 0.0) {
+      parsedSubtotal = parsedPrice * qty;
     }
 
     return OrderItemModel(
       id: json['id'] ?? '',
       productName: name,
       imageUrl: imgUrl,
-      quantity: json['quantity'] ?? 0,
-      price: double.tryParse(json['price'].toString()) ?? 0.0,
-      subtotal: double.tryParse(json['subtotal'].toString()) ?? 0.0,
+      quantity: qty,
+      price: parsedPrice,
+      subtotal: parsedSubtotal,
     );
   }
 
@@ -94,10 +107,15 @@ class OrderModel {
       email = json['profiles']['email'] ?? email;
     }
 
+    double parsedTotal = double.tryParse((json['total'] ?? json['total_amount'] ?? json['totalAmount'] ?? json['grand_total'] ?? json['grandTotal'] ?? 0).toString()) ?? 0.0;
+    if (parsedTotal == 0.0 && itemsList.isNotEmpty) {
+      parsedTotal = itemsList.fold<double>(0.0, (sum, item) => sum + item.subtotal);
+    }
+
     return OrderModel(
       id: json['id'] ?? '',
       status: json['status'] ?? 'pending',
-      total: double.tryParse(json['total'].toString()) ?? 0.0,
+      total: parsedTotal,
       shippingAddress: json['shipping_address'] ?? json['shippingAddress'] ?? '',
       note: json['notes'] ?? json['note'],
       createdAt: json['created_at'] ?? json['createdAt'] ?? '',

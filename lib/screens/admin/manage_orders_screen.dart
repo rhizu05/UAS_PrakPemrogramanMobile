@@ -69,7 +69,7 @@ class _ManageOrdersScreenState extends State<ManageOrdersScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ID: ${order.id.substring(0, 8).toUpperCase()}'),
+                  Text('ID: ${order.id.length >= 8 ? order.id.substring(0, 8).toUpperCase() : order.id.toUpperCase()}'),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: availableStatuses.contains(selectedStatus) ? selectedStatus : availableStatuses.first,

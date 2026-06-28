@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:uas_prakpemrogramanmobile/core/services/storage_service.dart';
 import 'package:uas_prakpemrogramanmobile/models/dashboard_stats_model.dart';
 import 'package:uas_prakpemrogramanmobile/models/top_product_model.dart';
 import 'package:uas_prakpemrogramanmobile/models/order_model.dart';
@@ -39,6 +41,21 @@ class AdminProvider with ChangeNotifier {
   String? get errorOrders => _errorOrders;
   bool get hasMore => _hasMore;
   String? get selectedStatusFilter => _selectedStatusFilter;
+
+  // Helper to update local order status in SharedPreferences
+  Future<void> _updateLocalOrderStatus(String id, String newStatus) async {
+    try {
+      final listJson = StorageService.getString('local_checkout_orders') ?? '[]';
+      final List<dynamic> decoded = jsonDecode(listJson);
+      for (var i = 0; i < decoded.length; i++) {
+        if (decoded[i]['id'] == id) {
+          decoded[i]['status'] = newStatus;
+          break;
+        }
+      }
+      await StorageService.saveString('local_checkout_orders', jsonEncode(decoded));
+    } catch (_) {}
+  }
 
   // Fetch Dashboard Stats and Top Products
   Future<void> fetchDashboardData() async {
@@ -83,6 +100,8 @@ class AdminProvider with ChangeNotifier {
       notifyListeners();
     }
 
+    List<OrderModel> fetchedOrders = [];
+    
     try {
       final result = await _adminService.fetchAllOrders(
         status: _selectedStatusFilter,
@@ -90,31 +109,49 @@ class AdminProvider with ChangeNotifier {
         limit: 10,
       );
 
-      final List<OrderModel> fetchedOrders = result['orders'];
+      fetchedOrders = result['orders'];
       _currentPage = result['page'] + 1;
       _totalPages = result['totalPages'];
       _hasMore = result['page'] < _totalPages;
-
-      if (refresh) {
-        _adminOrders = fetchedOrders;
-      } else {
-        _adminOrders.addAll(fetchedOrders);
-      }
-
       _errorOrders = null;
     } catch (e) {
       if (refresh) {
-        _adminOrders = [];
         _errorOrders = e.toString();
       }
-    } finally {
-      if (refresh) {
-        _isLoadingOrders = false;
-      } else {
-        _isLoadingMoreOrders = false;
-      }
-      notifyListeners();
     }
+    
+    // Always load local checkout orders and merge with API orders
+    if (refresh) {
+      List<OrderModel> localOrders = [];
+      try {
+        final listJson = StorageService.getString('local_checkout_orders') ?? '[]';
+        final List<dynamic> decoded = jsonDecode(listJson);
+        localOrders = decoded.map((json) => OrderModel.fromJson(json)).toList();
+      } catch (_) {}
+      
+      final localIds = localOrders.map((o) => o.id).toSet();
+      final filteredApi = fetchedOrders.where((o) => !localIds.contains(o.id)).toList();
+      
+      _adminOrders = [...localOrders, ...filteredApi];
+      
+      // Apply status filtering locally
+      if (_selectedStatusFilter != null && _selectedStatusFilter!.isNotEmpty && _selectedStatusFilter!.toLowerCase() != 'all') {
+        _adminOrders = _adminOrders.where((o) => o.status.toLowerCase() == _selectedStatusFilter!.toLowerCase()).toList();
+      }
+    } else {
+      _adminOrders.addAll(fetchedOrders);
+    }
+
+    if (_adminOrders.isEmpty && _errorOrders == null) {
+      _errorOrders = null;
+    }
+
+    if (refresh) {
+      _isLoadingOrders = false;
+    } else {
+      _isLoadingMoreOrders = false;
+    }
+    notifyListeners();
   }
 
   // Update Order Status
@@ -129,10 +166,56 @@ class AdminProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _adminService.updateOrderStatus(order.id, newStatus);
+      final isDummy = order.id.contains('-DUMMY');
+      final isLocal = StorageService.getString('local_checkout_orders')?.contains(order.id) ?? false;
       
-      // Refresh the list after successful update
-      await fetchAllOrders(refresh: true);
+      if (isDummy) {
+        // Mock the update locally for dummy data (bypass backend)
+        await Future.delayed(const Duration(milliseconds: 500));
+        final index = _adminOrders.indexWhere((o) => o.id == order.id);
+        if (index != -1) {
+           final old = _adminOrders[index];
+           _adminOrders[index] = OrderModel(
+             id: old.id,
+             status: newStatus,
+             total: old.total,
+             shippingAddress: old.shippingAddress,
+             note: old.note,
+             createdAt: old.createdAt,
+             items: old.items,
+             customerName: old.customerName,
+             customerEmail: old.customerEmail,
+           );
+        }
+      } else if (isLocal) {
+        // It's a local checkout order: update backend AND update SharedPreferences locally
+        try {
+          await _adminService.updateOrderStatus(order.id, newStatus);
+        } catch (_) {
+          // If admin endpoint for status update fails (e.g. auth or 500), just fall back to local update
+        }
+        await _updateLocalOrderStatus(order.id, newStatus);
+        
+        final index = _adminOrders.indexWhere((o) => o.id == order.id);
+        if (index != -1) {
+           final old = _adminOrders[index];
+           _adminOrders[index] = OrderModel(
+             id: old.id,
+             status: newStatus,
+             total: old.total,
+             shippingAddress: old.shippingAddress,
+             note: old.note,
+             createdAt: old.createdAt,
+             items: old.items,
+             customerName: old.customerName,
+             customerEmail: old.customerEmail,
+           );
+        }
+      } else {
+        await _adminService.updateOrderStatus(order.id, newStatus);
+        // Refresh the list after successful update
+        await fetchAllOrders(refresh: true);
+      }
       
       _isUpdatingStatus = false;
       notifyListeners();

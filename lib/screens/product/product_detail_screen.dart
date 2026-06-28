@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:uas_prakpemrogramanmobile/core/helpers/currency_helper.dart';
 import 'package:uas_prakpemrogramanmobile/core/helpers/date_helper.dart';
 import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
+import 'package:uas_prakpemrogramanmobile/providers/auth_provider.dart';
 import 'package:uas_prakpemrogramanmobile/providers/product_provider.dart';
 import 'package:uas_prakpemrogramanmobile/providers/cart_provider.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/custom_button.dart';
@@ -72,6 +73,51 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         );
       }
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _confirmDeleteReview(ProductProvider provider, String reviewId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Hapus Ulasan'),
+        content: const Text('Apakah Anda yakin ingin menghapus ulasan ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    try {
+      final success = await provider.deleteReview(widget.productId, reviewId);
+      if (!mounted) return;
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ulasan berhasil dihapus!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString()),
@@ -380,6 +426,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
     }
 
+    final user = context.read<AuthProvider>().user;
+    final currentUserId = user?.id;
+
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -387,18 +436,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       separatorBuilder: (_, _) => const Divider(color: AppColors.border, height: 24),
       itemBuilder: (context, index) {
         final review = provider.reviews[index];
+        final isOwnReview = currentUserId != null &&
+            review.reviewerId != null &&
+            review.reviewerId == currentUserId;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  review.reviewerName,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                Expanded(
+                  child: Text(
+                    review.reviewerName,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
                 Text(
@@ -408,6 +463,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     color: AppColors.textSecondary,
                   ),
                 ),
+                if (isOwnReview) ...[
+                  const SizedBox(width: 4),
+                  SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      iconSize: 18,
+                      icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                      onPressed: provider.isDeletingReview
+                          ? null
+                          : () => _confirmDeleteReview(provider, review.id),
+                    ),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 4),

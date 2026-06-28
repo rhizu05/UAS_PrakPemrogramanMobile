@@ -5,13 +5,20 @@ import 'package:uas_prakpemrogramanmobile/models/top_product_model.dart';
 import 'package:uas_prakpemrogramanmobile/models/order_model.dart';
 
 class AdminService {
-  // Fetch dashboard statistics
   Future<DashboardStatsModel> fetchDashboardStats() async {
     final response = await ApiService.get(
       ApiConstants.adminStats,
       requireAuth: true,
     );
-    return DashboardStatsModel.fromJson(response['data']);
+    
+    Map<String, dynamic> data = {};
+    if (response != null && response['data'] is Map) {
+      data = response['data'] as Map<String, dynamic>;
+    } else if (response is Map<String, dynamic>) {
+      data = response;
+    }
+    
+    return DashboardStatsModel.fromJson(data);
   }
 
   // Fetch top selling products
@@ -20,7 +27,27 @@ class AdminService {
       ApiConstants.adminTopProducts,
       requireAuth: true,
     );
-    final List<dynamic> productsData = response['data'] ?? [];
+    
+    List<dynamic> productsData = [];
+    if (response['data'] is List) {
+      productsData = response['data'];
+    } else if (response['data'] is Map) {
+      // If it's a Map, try to find a list inside it
+      final mapData = response['data'] as Map;
+      for (var value in mapData.values) {
+        if (value is List) {
+          productsData = value;
+          break;
+        }
+      }
+      // Or maybe it's directly the Map's values if the map is just { "0": {...}, "1": {...} }?
+      if (productsData.isEmpty) {
+         productsData = mapData.values.toList();
+      }
+    } else if (response is List) {
+      productsData = response;
+    }
+
     return productsData.map((json) => TopProductModel.fromJson(json)).toList();
   }
 

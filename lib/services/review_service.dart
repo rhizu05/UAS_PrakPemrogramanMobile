@@ -3,6 +3,13 @@ import 'package:uas_prakpemrogramanmobile/core/services/api_service.dart';
 import 'package:uas_prakpemrogramanmobile/models/review_model.dart';
 
 class ReviewService {
+  // Delete own review by ID
+  Future<void> deleteReview(String reviewId) async {
+    await ApiService.delete(
+      ApiConstants.reviewDetail(reviewId),
+      requireAuth: true,
+    );
+  }
   // Fetch reviews for a specific product with pagination
   Future<Map<String, dynamic>> fetchProductReviews(
     String productId, {
@@ -20,7 +27,24 @@ class ReviewService {
       queryParams: queryParams,
     );
 
-    final List<dynamic> reviewsData = response['data'] ?? [];
+    List<dynamic> reviewsData = [];
+    if (response['data'] is List) {
+      reviewsData = response['data'];
+    } else if (response['data'] is Map) {
+      final mapData = response['data'] as Map;
+      for (var value in mapData.values) {
+        if (value is List) {
+          reviewsData = value;
+          break;
+        }
+      }
+      if (reviewsData.isEmpty) {
+        reviewsData = mapData.values.toList();
+      }
+    } else if (response is List) {
+      reviewsData = response;
+    }
+
     final reviews = reviewsData.map((json) => ReviewModel.fromJson(json)).toList();
 
     final pagination = response['pagination'] ?? {};

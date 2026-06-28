@@ -26,11 +26,11 @@ Aplikasi ini memiliki sistem otorisasi tingkat peran (Role-Based Authorization) 
 
 | Halaman Splash & Login | Katalog & Detail Produk | Keranjang Belanja & Checkout |
 | :---: | :---: | :---: |
-| ![Login](https://raw.githubusercontent.com/flutter/documents/main/images/logo.png) <br> *Halaman Login* | ![Catalog](https://raw.githubusercontent.com/flutter/documents/main/images/logo.png) <br> *Beranda Produk & Filter* | ![Cart](https://raw.githubusercontent.com/flutter/documents/main/images/logo.png) <br> *Keranjang & Checkout* |
+| ![Login](./docs/screenshots/login.png) <br> *Halaman Login* | ![Catalog](./docs/screenshots/catalog.png) <br> *Beranda Produk & Filter* | ![Cart](./docs/screenshots/cart.png) <br> *Keranjang & Checkout* |
 
 | Dashboard & Statistik Admin | Peringkat Produk Terlaris | Manajemen Pesanan Pelanggan |
 | :---: | :---: | :---: |
-| ![Dashboard](https://raw.githubusercontent.com/flutter/documents/main/images/logo.png) <br> *Dashboard Statistik* | ![Top Products](https://raw.githubusercontent.com/flutter/documents/main/images/logo.png) <br> *Grafik Produk Terlaris* | ![Manage Orders](https://raw.githubusercontent.com/flutter/documents/main/images/logo.png) <br> *Kelola Status Pesanan* |
+| ![Dashboard](./docs/screenshots/dashboard.png) <br> *Dashboard Statistik* | ![Top Products](./docs/screenshots/top_products.png) <br> *Grafik Produk Terlaris* | ![Manage Orders](./docs/screenshots/manage_orders.png) <br> *Kelola Status Pesanan* |
 
 ---
 

@@ -87,7 +87,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         controller: _scrollController,
         padding: const EdgeInsets.all(16),
         itemCount: provider.orders.length + (provider.isLoadingMore ? 1 : 0),
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           if (index < provider.orders.length) {
             final order = provider.orders[index];
@@ -143,7 +143,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                             ),
                           ),
                           Text(
-                            CurrencyHelper.formatRupiah(order.totalAmount),
+                            CurrencyHelper.formatRupiah(order.total),
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,

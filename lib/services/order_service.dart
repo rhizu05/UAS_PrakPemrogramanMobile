@@ -49,6 +49,7 @@ class OrderService {
     String? notes,
   }) async {
     final Map<String, dynamic> body = {
+      'shipping_address': address,
       'address': address,
       'phone': phone,
     };

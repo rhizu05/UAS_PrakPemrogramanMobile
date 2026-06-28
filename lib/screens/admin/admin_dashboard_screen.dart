@@ -103,13 +103,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
               StatsCard(
                 title: 'Total Pelanggan',
-                value: stats.totalCustomers.toString(),
+                value: stats.totalUsers.toString(),
                 icon: Icons.people_alt_rounded,
                 color: AppColors.info,
               ),
               StatsCard(
                 title: 'Pesanan Pending',
-                value: stats.totalPendingOrders.toString(),
+                value: (stats.ordersByStatus['pending'] ?? 0).toString(),
                 icon: Icons.pending_actions_rounded,
                 color: AppColors.warning,
               ),

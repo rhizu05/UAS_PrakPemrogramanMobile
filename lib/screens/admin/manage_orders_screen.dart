@@ -72,7 +72,7 @@ class _ManageOrdersScreenState extends State<ManageOrdersScreen> {
                   Text('ID: ${order.id.substring(0, 8).toUpperCase()}'),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: availableStatuses.contains(selectedStatus) ? selectedStatus : availableStatuses.first,
+                    initialValue: availableStatuses.contains(selectedStatus) ? selectedStatus : availableStatuses.first,
                     decoration: InputDecoration(
                       labelText: 'Status Baru',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -114,7 +114,7 @@ class _ManageOrdersScreenState extends State<ManageOrdersScreen> {
   void _confirmUpdate(AdminProvider provider, OrderModel order, String newStatus) {
     showDialog(
       context: context,
-      builder: (context) => ConfirmationDialog(
+      builder: (dialogContext) => ConfirmationDialog(
         title: 'Konfirmasi',
         message: 'Anda yakin ingin mengubah status menjadi $newStatus?',
         onConfirm: () async {
@@ -229,7 +229,7 @@ class _ManageOrdersScreenState extends State<ManageOrdersScreen> {
         controller: _scrollController,
         padding: const EdgeInsets.all(16),
         itemCount: provider.adminOrders.length + (provider.isLoadingMoreOrders ? 1 : 0),
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           if (index < provider.adminOrders.length) {
             final order = provider.adminOrders[index];
@@ -280,7 +280,7 @@ class _ManageOrdersScreenState extends State<ManageOrdersScreen> {
                               ),
                             ),
                             Text(
-                              CurrencyHelper.formatRupiah(order.totalAmount),
+                              CurrencyHelper.formatRupiah(order.total),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,

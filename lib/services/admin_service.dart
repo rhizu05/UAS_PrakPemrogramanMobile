@@ -8,7 +8,7 @@ class AdminService {
   // Fetch dashboard statistics
   Future<DashboardStatsModel> fetchDashboardStats() async {
     final response = await ApiService.get(
-      ApiConstants.dashboardStats,
+      ApiConstants.adminStats,
       requireAuth: true,
     );
     return DashboardStatsModel.fromJson(response['data']);
@@ -17,7 +17,7 @@ class AdminService {
   // Fetch top selling products
   Future<List<TopProductModel>> fetchTopProducts() async {
     final response = await ApiService.get(
-      ApiConstants.topProducts,
+      ApiConstants.adminTopProducts,
       requireAuth: true,
     );
     final List<dynamic> productsData = response['data'] ?? [];
@@ -61,7 +61,7 @@ class AdminService {
   // Update specific order status
   Future<void> updateOrderStatus(String orderId, String newStatus) async {
     await ApiService.put(
-      ApiConstants.orderStatus(orderId),
+      ApiConstants.updateOrderStatus(orderId),
       body: {
         'status': newStatus,
       },

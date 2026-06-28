@@ -4,7 +4,6 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:uas_prakpemrogramanmobile/core/helpers/currency_helper.dart';
 import 'package:uas_prakpemrogramanmobile/core/helpers/date_helper.dart';
-import 'package:uas_prakpemrogramanmobile/core/helpers/validation_helper.dart';
 import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
 import 'package:uas_prakpemrogramanmobile/providers/product_provider.dart';
 import 'package:uas_prakpemrogramanmobile/providers/cart_provider.dart';
@@ -156,7 +155,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               children: [
                 // Category & Stock
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.between,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -385,14 +384,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: provider.reviews.length,
-      separatorBuilder: (_, __) => const Divider(color: AppColors.border, height: 24),
+      separatorBuilder: (_, _) => const Divider(color: AppColors.border, height: 24),
       itemBuilder: (context, index) {
         final review = provider.reviews[index];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.between,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   review.reviewerName,
@@ -477,14 +476,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           SizedBox(
             width: 180,
             child: Consumer<CartProvider>(
-              builder: (context, cartProvider, child) {
+              builder: (consumerContext, cartProvider, child) {
                 return CustomButton(
                   text: 'Beli Sekarang',
                   isLoading: cartProvider.isLoading,
                   onPressed: product.stock > 0
                       ? () async {
                           final success = await cartProvider.addToCart(product.id);
-                          if (!context.mounted) return;
+                          if (!mounted) return;
                           if (success) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(

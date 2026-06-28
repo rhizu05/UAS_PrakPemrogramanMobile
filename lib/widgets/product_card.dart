@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image;'; // wait, make sure syntax is clean
+
 import 'package:flutter/material.dart';
 import 'package:uas_prakpemrogramanmobile/core/helpers/currency_helper.dart';
 import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
@@ -96,7 +96,7 @@ class ProductCard extends StatelessWidget {
                     
                     // Price & Rating
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.between,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Text(

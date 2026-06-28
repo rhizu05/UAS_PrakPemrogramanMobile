@@ -58,9 +58,9 @@ class AuthService {
       ApiConstants.profile,
       body: {
         'full_name': fullName,
-        if (phone != null) 'phone': phone,
-        if (avatarUrl != null) 'avatar_url': avatarUrl,
-      },
+        'phone': phone,
+        'avatar_url': avatarUrl,
+      }..removeWhere((key, value) => value == null),
       requireAuth: true,
     );
     return UserModel.fromJson(response['data']);

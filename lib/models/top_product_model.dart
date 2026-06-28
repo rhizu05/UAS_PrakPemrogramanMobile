@@ -14,10 +14,19 @@ class TopProductModel {
   });
 
   factory TopProductModel.fromJson(Map<String, dynamic> json) {
+    String name = json['name'] ?? '';
+    String? imgUrl = json['image_url'] ?? json['imageUrl'] ?? json['image'];
+
+    if (json['product'] is Map<String, dynamic>) {
+      final productMap = json['product'] as Map<String, dynamic>;
+      name = productMap['name'] ?? name;
+      imgUrl = productMap['image_url'] ?? productMap['imageUrl'] ?? imgUrl;
+    }
+
     return TopProductModel(
       id: json['product_id'] ?? json['id'] ?? '',
-      name: json['name'] ?? '',
-      imageUrl: json['image_url'] ?? json['imageUrl'] ?? json['image'],
+      name: name,
+      imageUrl: imgUrl,
       soldCount: int.tryParse((json['sold_quantity'] ?? json['soldCount'] ?? json['sold_count'] ?? 0).toString()) ?? 0,
       totalSales: double.tryParse((json['total_sales'] ?? json['totalSales'] ?? 0).toString()) ?? 0.0,
     );

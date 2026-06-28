@@ -18,15 +18,16 @@ class EmptyStateWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
             icon,
             size: 72,
-            color: AppColors.secondary.withOpacity(0.5),
+            color: AppColors.secondary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -50,6 +51,6 @@ class EmptyStateWidget extends StatelessWidget {
           ],
         ],
       ),
-    );
+    ));
   }
 }

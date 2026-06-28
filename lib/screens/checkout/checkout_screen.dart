@@ -48,7 +48,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => ConfirmationDialog(
+      builder: (dialogContext) => ConfirmationDialog(
         title: 'Konfirmasi Pesanan',
         message: 'Apakah Anda yakin ingin menyelesaikan pesanan ini?',
         onConfirm: () async {
@@ -139,7 +139,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: cart.items.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.border),
+                  separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.border),
                   itemBuilder: (context, index) {
                     final item = cart.items[index];
                     return ListTile(

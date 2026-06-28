@@ -26,9 +26,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.getProfile();
+      await authProvider.fetchProfile();
       if (authProvider.user != null) {
-        _nameController.text = authProvider.user!.name;
+        _nameController.text = authProvider.user!.fullName;
         _phoneController.text = authProvider.user!.phone ?? '';
       }
     });
@@ -47,7 +47,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     try {
       final success = await authProvider.updateProfile(
-        name: _nameController.text,
+        fullName: _nameController.text,
         phone: _phoneController.text,
       );
 
@@ -74,7 +74,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   void _handleLogout() {
     showDialog(
       context: context,
-      builder: (context) => ConfirmationDialog(
+      builder: (dialogContext) => ConfirmationDialog(
         title: 'Konfirmasi Keluar',
         message: 'Apakah Anda yakin ingin keluar dari aplikasi Admin?',
         isDanger: true,
@@ -135,7 +135,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                           radius: 40,
                           backgroundColor: Colors.red[50],
                           child: Text(
-                            user != null && user.name.isNotEmpty ? user.name[0].toUpperCase() : 'A',
+                            user != null && user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'A',
                             style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
@@ -145,7 +145,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          user?.name ?? 'Administrator',
+                          user?.fullName ?? 'Administrator',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -200,7 +200,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                           controller: _nameController,
                           labelText: 'Nama Lengkap',
                           validator: ValidationHelper.validateName,
-                          prefixIcon: const Icon(Icons.person_outline),
+                          prefixIcon: Icons.person_outline,
                         ),
                         const SizedBox(height: 16),
                         CustomTextField(
@@ -208,7 +208,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                           labelText: 'Nomor Telepon',
                           keyboardType: TextInputType.phone,
                           validator: ValidationHelper.validatePhone,
-                          prefixIcon: const Icon(Icons.phone_outlined),
+                          prefixIcon: Icons.phone_outlined,
                         ),
                         const SizedBox(height: 24),
                         CustomButton(
@@ -219,7 +219,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                         const SizedBox(height: 12),
                         CustomButton(
                           text: 'Keluar Akun Admin',
-                          isSecondary: true,
+                          isDanger: true,
                           onPressed: _handleLogout,
                         ),
                       ],

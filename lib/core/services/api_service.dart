@@ -25,11 +25,15 @@ class ApiService {
 
     if (requireAuth) {
       final token = StorageService.getToken();
+      print('ApiService: Token retrieved from storage: "$token"');
       if (token != null && token.isNotEmpty) {
         headers['Authorization'] = 'Bearer $token';
+      } else {
+        print('ApiService: WARNING! Token is empty or null!');
       }
     }
 
+    print('ApiService: Request Headers: $headers');
     return headers;
   }
 
@@ -66,10 +70,13 @@ class ApiService {
         uri = uri.replace(queryParameters: queryParams);
       }
 
+      print('ApiService: GET Request to: $_baseUrl$endpoint');
       final response = await http.get(
         uri,
         headers: _getHeaders(requireAuth: requireAuth),
       );
+      print('ApiService: GET Response Status: ${response.statusCode}');
+      print('ApiService: GET Response Body: ${response.body}');
       
       return _processResponse(response);
     } catch (e) {

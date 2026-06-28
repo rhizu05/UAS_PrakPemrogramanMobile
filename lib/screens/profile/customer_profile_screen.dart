@@ -26,9 +26,9 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.getProfile();
+      await authProvider.fetchProfile();
       if (authProvider.user != null) {
-        _nameController.text = authProvider.user!.name;
+        _nameController.text = authProvider.user!.fullName;
         _phoneController.text = authProvider.user!.phone ?? '';
       }
     });
@@ -47,7 +47,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     try {
       final success = await authProvider.updateProfile(
-        name: _nameController.text,
+        fullName: _nameController.text,
         phone: _phoneController.text,
       );
 
@@ -74,7 +74,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
   void _handleLogout() {
     showDialog(
       context: context,
-      builder: (context) => ConfirmationDialog(
+      builder: (dialogContext) => ConfirmationDialog(
         title: 'Konfirmasi Keluar',
         message: 'Apakah Anda yakin ingin keluar dari aplikasi?',
         isDanger: true,
@@ -135,7 +135,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                           radius: 40,
                           backgroundColor: AppColors.primarySoft,
                           child: Text(
-                            user != null && user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                            user != null && user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'U',
                             style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
@@ -145,7 +145,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          user?.name ?? 'Nama Pengguna',
+                          user?.fullName ?? 'Nama Pengguna',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -168,7 +168,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            'Peran: ${user?.roleName.toUpperCase() ?? 'CUSTOMER'}',
+                            'Peran: ${user?.role.toUpperCase() ?? 'CUSTOMER'}',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -200,7 +200,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                           controller: _nameController,
                           labelText: 'Nama Lengkap',
                           validator: ValidationHelper.validateName,
-                          prefixIcon: const Icon(Icons.person_outline),
+                          prefixIcon: Icons.person_outline,
                         ),
                         const SizedBox(height: 16),
                         CustomTextField(
@@ -208,7 +208,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                           labelText: 'Nomor Telepon',
                           keyboardType: TextInputType.phone,
                           validator: ValidationHelper.validatePhone,
-                          prefixIcon: const Icon(Icons.phone_outlined),
+                          prefixIcon: Icons.phone_outlined,
                         ),
                         const SizedBox(height: 24),
                         CustomButton(
@@ -219,7 +219,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                         const SizedBox(height: 12),
                         CustomButton(
                           text: 'Keluar Akun',
-                          isSecondary: true,
+                          isDanger: true,
                           onPressed: _handleLogout,
                         ),
                       ],

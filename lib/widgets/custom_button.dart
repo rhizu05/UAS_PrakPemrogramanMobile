@@ -19,7 +19,7 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+
     final buttonColor = isDanger ? AppColors.error : AppColors.primary;
     final textColor = isOutlined ? buttonColor : Colors.white;
 
@@ -69,10 +69,10 @@ class CustomButton extends StatelessWidget {
           ),
           padding: const EdgeInsets.symmetric(vertical: 16),
         ).copyWith(
-          backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+          backgroundColor: WidgetStateProperty.resolveWith<Color?>(
             (states) {
-              if (states.contains(MaterialState.disabled)) {
-                return buttonColor.withOpacity(0.5);
+              if (states.contains(WidgetState.disabled)) {
+                return buttonColor.withValues(alpha: 0.5);
               }
               return buttonColor;
             },

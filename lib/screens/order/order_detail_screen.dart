@@ -135,18 +135,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  order.address,
+                  order.shippingAddress,
                   style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 12),
-                if (order.customer != null && order.customer!.phone != null) ...[
+                if (order.customerName != null) ...[
                   const Text(
-                    'Nomor Telepon',
+                    'Nama Pelanggan',
                     style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    order.customer!.phone!,
+                    order.customerName!,
                     style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 12),
@@ -157,7 +157,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  order.notes?.isNotEmpty == true ? order.notes! : '-',
+                  order.note?.isNotEmpty == true ? order.note! : '-',
                   style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
                 ),
               ],
@@ -184,7 +184,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: order.items.length,
-              separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.border),
+              separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.border),
               itemBuilder: (context, index) {
                 final item = order.items[index];
                 return Padding(
@@ -196,7 +196,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              item.product?.name ?? 'Produk',
+                              item.productName.isNotEmpty ? item.productName : 'Produk',
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
@@ -246,7 +246,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                 ),
                 Text(
-                  CurrencyHelper.formatRupiah(order.totalAmount),
+                  CurrencyHelper.formatRupiah(order.total),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

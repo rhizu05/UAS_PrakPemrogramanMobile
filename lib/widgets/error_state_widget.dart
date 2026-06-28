@@ -14,8 +14,9 @@ class ErrorStateWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -53,6 +54,6 @@ class ErrorStateWidget extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

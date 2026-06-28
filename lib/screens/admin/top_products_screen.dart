@@ -96,7 +96,7 @@ class _TopProductsScreenState extends State<TopProductsScreen> {
                     BarChartData(
                       alignment: BarChartAlignment.spaceAround,
                       maxY: topProducts.fold<double>(
-                          0, (max, e) => e.totalSold.toDouble() > max ? e.totalSold.toDouble() : max) * 1.2,
+                          0, (max, e) => e.soldCount.toDouble() > max ? e.soldCount.toDouble() : max) * 1.2,
                       barTouchData: BarTouchData(enabled: true),
                       titlesData: FlTitlesData(
                         show: true,
@@ -139,7 +139,7 @@ class _TopProductsScreenState extends State<TopProductsScreen> {
                           x: entry.key,
                           barRods: [
                             BarChartRodData(
-                              toY: entry.value.totalSold.toDouble(),
+                              toY: entry.value.soldCount.toDouble(),
                               color: AppColors.primary,
                               width: 16,
                               borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
@@ -169,7 +169,7 @@ class _TopProductsScreenState extends State<TopProductsScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: topProducts.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final product = topProducts[index];
               return Card(
@@ -191,10 +191,10 @@ class _TopProductsScreenState extends State<TopProductsScreen> {
                     ),
                   ),
                   title: Text(
-                    product.productName,
+                    product.name,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text('ID: ${product.productId}'),
+                  subtitle: Text('ID: ${product.id}'),
                   trailing: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -203,7 +203,7 @@ class _TopProductsScreenState extends State<TopProductsScreen> {
                         style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
                       ),
                       Text(
-                        '${product.totalSold}',
+                        '${product.soldCount}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

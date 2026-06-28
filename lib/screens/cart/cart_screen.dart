@@ -64,7 +64,7 @@ class _CartScreenState extends State<CartScreen> {
   Future<void> _handleClearCart() async {
     showDialog(
       context: context,
-      builder: (context) => ConfirmationDialog(
+      builder: (dialogContext) => ConfirmationDialog(
         title: 'Kosongkan Keranjang',
         message: 'Apakah Anda yakin ingin menghapus seluruh produk dari keranjang?',
         onConfirm: () async {
@@ -139,7 +139,7 @@ class _CartScreenState extends State<CartScreen> {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: cart.items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final item = cart.items[index];
         final product = item.product;
@@ -161,8 +161,8 @@ class _CartScreenState extends State<CartScreen> {
                         ? CachedNetworkImage(
                             imageUrl: product.imageUrl!,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(color: AppColors.cardSoft),
-                            errorWidget: (_, __, ___) => Container(
+                            placeholder: (_, _) => Container(color: AppColors.cardSoft),
+                            errorWidget: (_, _, _) => Container(
                               color: AppColors.cardSoft,
                               child: const Icon(Icons.broken_image_outlined, color: AppColors.secondary),
                             ),
@@ -205,7 +205,7 @@ class _CartScreenState extends State<CartScreen> {
                       
                       // Quantity Controls & Subtotal Row
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.between,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           // Quantity +/- Button Controls
                           Container(

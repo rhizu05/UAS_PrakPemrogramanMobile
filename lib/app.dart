@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uas_prakpemrogramanmobile/core/theme/app_theme.dart';
 
 // TODO: app.dart
 // Tanggung jawab: Menyusun MaterialApp utama, mengonfigurasi tema Light Minimal Modern,
@@ -10,9 +11,7 @@ class MobileMartApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mobile Mart',
-      theme: ThemeData(
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
       home: const Scaffold(
         body: Center(child: Text('Mobile Mart App')),
       ),

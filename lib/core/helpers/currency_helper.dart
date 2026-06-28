@@ -1,3 +1,12 @@
-// TODO: core/helpers/currency_helper.dart
-// Tanggung jawab: Menyimpan helper untuk formatting mata uang Rupiah (IDR) menggunakan package intl.
-// Output yang diharapkan: "Rp 8.500.000"
+import 'package:intl/intl.dart';
+
+class CurrencyHelper {
+  static String formatRupiah(num value) {
+    final formatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+    return formatter.format(value);
+  }
+}

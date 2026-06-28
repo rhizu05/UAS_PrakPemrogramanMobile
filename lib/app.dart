@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:uas_prakpemrogramanmobile/core/theme/app_theme.dart';
+import 'package:uas_prakpemrogramanmobile/providers/auth_provider.dart';
+import 'package:uas_prakpemrogramanmobile/screens/splash/splash_screen.dart';
 
 // TODO: app.dart
 // Tanggung jawab: Menyusun MaterialApp utama, mengonfigurasi tema Light Minimal Modern,
@@ -9,11 +12,15 @@ class MobileMartApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mobile Mart',
-      theme: AppTheme.lightTheme,
-      home: const Scaffold(
-        body: Center(child: Text('Mobile Mart App')),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Mobile Mart',
+        theme: AppTheme.lightTheme,
+        debugShowCheckedModeBanner: false,
+        home: const SplashScreen(),
       ),
     );
   }

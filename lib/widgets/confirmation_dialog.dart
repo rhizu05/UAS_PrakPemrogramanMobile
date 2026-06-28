@@ -1,18 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
 
-// TODO: widgets/confirmation_dialog.dart
-// Tanggung jawab: Menyediakan dialog konfirmasi popup reusable (e.g., checkout, logout, kosongkan cart, update status order).
 class ConfirmationDialog extends StatelessWidget {
-  const ConfirmationDialog({super.key});
+  final String title;
+  final String message;
+  final VoidCallback onConfirm;
+  final String confirmText;
+  final String cancelText;
+  final bool isDanger;
+
+  const ConfirmationDialog({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.onConfirm,
+    this.confirmText = 'Ya',
+    this.cancelText = 'Batal',
+    this.isDanger = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Konfirmasi'),
-      content: const Text('Apakah Anda yakin?'),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      content: Text(
+        message,
+        style: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textSecondary,
+        ),
+      ),
       actions: [
-        TextButton(onPressed: () {}, child: const Text('Batal')),
-        TextButton(onPressed: () {}, child: const Text('Ya')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            cancelText,
+            style: const TextStyle(color: AppColors.secondary),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); // Close dialog first
+            onConfirm();
+          },
+          child: Text(
+            confirmText,
+            style: TextStyle(
+              color: isDanger ? AppColors.error : AppColors.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ],
     );
   }

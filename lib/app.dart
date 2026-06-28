@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uas_prakpemrogramanmobile/core/theme/app_theme.dart';
 import 'package:uas_prakpemrogramanmobile/providers/auth_provider.dart';
+import 'package:uas_prakpemrogramanmobile/providers/product_provider.dart';
+import 'package:uas_prakpemrogramanmobile/providers/category_provider.dart';
+import 'package:uas_prakpemrogramanmobile/providers/cart_provider.dart';
 import 'package:uas_prakpemrogramanmobile/screens/splash/splash_screen.dart';
 
 // TODO: app.dart
@@ -15,6 +18,9 @@ class MobileMartApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: MaterialApp(
         title: 'Mobile Mart',

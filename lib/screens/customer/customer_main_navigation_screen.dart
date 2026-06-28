@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
+import 'package:uas_prakpemrogramanmobile/providers/cart_provider.dart';
 import 'package:uas_prakpemrogramanmobile/screens/home/home_screen.dart';
 import 'package:uas_prakpemrogramanmobile/screens/cart/cart_screen.dart';
 import 'package:uas_prakpemrogramanmobile/screens/order/order_history_screen.dart';
@@ -23,7 +25,18 @@ class _CustomerMainNavigationScreenState extends State<CustomerMainNavigationScr
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Fetch cart items on navigation loading to update badge immediately
+      Provider.of<CartProvider>(context, listen: false).fetchCart();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -48,23 +61,31 @@ class _CustomerMainNavigationScreenState extends State<CustomerMainNavigationScr
           unselectedItemColor: AppColors.secondary,
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           unselectedLabelStyle: const TextStyle(fontSize: 12),
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart_outlined),
-              activeIcon: Icon(Icons.shopping_cart),
+              icon: Badge(
+                label: Text(cartProvider.totalItems.toString()),
+                isLabelVisible: cartProvider.totalItems > 0,
+                child: const Icon(Icons.shopping_cart_outlined),
+              ),
+              activeIcon: Badge(
+                label: Text(cartProvider.totalItems.toString()),
+                isLabelVisible: cartProvider.totalItems > 0,
+                child: const Icon(Icons.shopping_cart),
+              ),
               label: 'Cart',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
               activeIcon: Icon(Icons.receipt_long),
               label: 'Orders',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.person_outlined),
               activeIcon: Icon(Icons.person),
               label: 'Profile',

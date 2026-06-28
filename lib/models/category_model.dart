@@ -1,5 +1,35 @@
-// TODO: models/category_model.dart
-// Tanggung jawab: Model data kategori produk.
 class CategoryModel {
-  // Fields: id, name, slug, description, image_url
+  final String id;
+  final String name;
+  final String slug;
+  final String? description;
+  final String? imageUrl;
+
+  CategoryModel({
+    required this.id,
+    required this.name,
+    required this.slug,
+    this.description,
+    this.imageUrl,
+  });
+
+  factory CategoryModel.fromJson(Map<String, dynamic> json) {
+    return CategoryModel(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      slug: json['slug'] ?? '',
+      description: json['description'],
+      imageUrl: json['image_url'] ?? json['imageUrl'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'slug': slug,
+      'description': description,
+      'image_url': imageUrl,
+    };
+  }
 }

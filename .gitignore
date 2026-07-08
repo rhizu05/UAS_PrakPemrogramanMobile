@@ -10,8 +10,11 @@
 .history
 .svn/
 .swiftpm/
+.config
+.vscode
 migrate_working_dir/
 docs
+stitch_assets
 
 # IntelliJ related
 *.iml

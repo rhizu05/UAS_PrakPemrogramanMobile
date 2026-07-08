@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'https://api-tb-f2wk.onrender.com/api';
+  static const String baseUrl = 'http://localhost:3000/api';
 
   // Auth Endpoints
   static const String register = '/auth/register';
@@ -25,7 +25,8 @@ class ApiConstants {
   static String updateOrderStatus(String id) => '/orders/$id/status';
 
   // Reviews
-  static String productReviews(String productId) => '/reviews/product/$productId';
+  static String productReviews(String productId) =>
+      '/reviews/product/$productId';
   static String reviewDetail(String id) => '/reviews/$id';
 
   // Admin Dashboard

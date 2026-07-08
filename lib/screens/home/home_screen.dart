@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
 import 'package:uas_prakpemrogramanmobile/providers/product_provider.dart';
 import 'package:uas_prakpemrogramanmobile/providers/category_provider.dart';
+import 'package:uas_prakpemrogramanmobile/screens/cart/cart_screen.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/product_card.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/shimmer_product_card.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/empty_state_widget.dart';
@@ -25,11 +26,18 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    
+    _searchController.addListener(_onSearchTextChanged);
+
     // Fetch initial data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final productProvider = Provider.of<ProductProvider>(context, listen: false);
-      final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+      final productProvider = Provider.of<ProductProvider>(
+        context,
+        listen: false,
+      );
+      final categoryProvider = Provider.of<CategoryProvider>(
+        context,
+        listen: false,
+      );
 
       categoryProvider.fetchCategories();
       // Apply existing filter defaults on startup
@@ -49,17 +57,30 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  void _onSearchTextChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       // Near bottom, load more
-      Provider.of<ProductProvider>(context, listen: false).fetchProducts(refresh: false);
+      Provider.of<ProductProvider>(
+        context,
+        listen: false,
+      ).fetchProducts(refresh: false);
     }
   }
 
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+      final categoryProvider = Provider.of<CategoryProvider>(
+        context,
+        listen: false,
+      );
       Provider.of<ProductProvider>(context, listen: false).updateFilters(
         search: query,
         categoryId: categoryProvider.selectedCategoryId,
@@ -75,133 +96,120 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Mobile Mart'),
+        title: const Text(
+          'Mobile Mart',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppColors.primary,
+          ),
+        ),
+        centerTitle: true,
         elevation: 0,
         backgroundColor: AppColors.card,
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
+          onPressed: () {},
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+            icon: const Icon(
+              Icons.shopping_cart_outlined,
+              color: AppColors.textPrimary,
+            ),
             onPressed: () {
-              categoryProvider.fetchCategories();
-              productProvider.fetchProducts(refresh: true);
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const CartScreen()));
             },
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Search, Filter Sort Header Section
-          Container(
-            color: AppColors.card,
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-            child: Column(
-              children: [
-                // Search Bar
-                TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  decoration: InputDecoration(
-                    hintText: 'Cari produk...',
-                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.secondary),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear_rounded, color: AppColors.secondary),
-                            onPressed: () {
-                              _searchController.clear();
-                              _onSearchChanged('');
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: AppColors.cardSoft,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 1),
-                    ),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _searchController,
+              onChanged: _onSearchChanged,
+              decoration: InputDecoration(
+                hintText: 'Search products...',
+                hintStyle: const TextStyle(color: AppColors.textSecondary),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: AppColors.textSecondary,
+                ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.clear_rounded,
+                          color: AppColors.textSecondary,
+                        ),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged('');
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: AppColors.card,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(999),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(999),
+                  borderSide: const BorderSide(
+                    color: AppColors.primary,
+                    width: 1.2,
                   ),
                 ),
-                const SizedBox(height: 12),
-                
-                // Sorting & Label Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Pilih Kategori',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    
-                    // Sort Dropdown
-                    DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: productProvider.selectedSort,
-                        icon: const Icon(Icons.swap_vert_rounded, color: AppColors.primary, size: 20),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                        onChanged: (String? newSort) {
-                          if (newSort != null) {
-                            productProvider.updateFilters(sort: newSort);
-                          }
-                        },
-                        items: const [
-                          DropdownMenuItem(value: 'newest', child: Text('Terbaru')),
-                          DropdownMenuItem(value: 'price_asc', child: Text('Harga Terendah')),
-                          DropdownMenuItem(value: 'price_desc', child: Text('Harga Tertinggi')),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-          
-          // Horizontal Kategori Chips
-          Container(
-            height: 48,
-            color: AppColors.card,
-            child: categoryProvider.isLoading
-                ? const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)))
-                : ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: categoryProvider.categories.length + 1,
-                    itemBuilder: (context, index) {
-                      final isAll = index == 0;
-                      final category = isAll ? null : categoryProvider.categories[index - 1];
-                      
-                      final catId = isAll ? null : category!.id;
-                      final catName = isAll ? 'Semua' : category!.name;
-                      final isSelected = categoryProvider.selectedCategoryId == catId;
+            const SizedBox(height: 14),
+            SizedBox(
+              height: 40,
+              child: categoryProvider.isLoading
+                  ? const Center(
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: categoryProvider.categories.length + 1,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final isAll = index == 0;
+                        final category = isAll
+                            ? null
+                            : categoryProvider.categories[index - 1];
+                        final catId = isAll ? null : category!.id;
+                        final catName = isAll ? 'All' : category!.name;
+                        final isSelected =
+                            categoryProvider.selectedCategoryId == catId;
 
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: ChoiceChip(
+                        return ChoiceChip(
                           label: Text(catName),
                           selected: isSelected,
-                          selectedColor: AppColors.primarySoft,
-                          backgroundColor: AppColors.cardSoft,
+                          selectedColor: AppColors.primary,
+                          backgroundColor: AppColors.card,
                           labelStyle: TextStyle(
-                            color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? AppColors.card
+                                : AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(999),
                             side: BorderSide(
-                              color: isSelected ? AppColors.primary : Colors.transparent,
-                              width: 1,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.border,
                             ),
                           ),
                           onSelected: (selected) {
@@ -210,17 +218,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               productProvider.updateFilters(categoryId: catId);
                             }
                           },
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          
-          // Product List Grid
-          Expanded(
-            child: _buildProductsBody(productProvider),
-          ),
-        ],
+                        );
+                      },
+                    ),
+            ),
+            const SizedBox(height: 14),
+            Expanded(child: _buildProductsBody(productProvider)),
+          ],
+        ),
       ),
     );
   }
@@ -256,12 +261,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GridView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(bottom: 16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.7,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        childAspectRatio: 0.72,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
       ),
       itemCount: provider.products.length + (provider.isLoadingMore ? 2 : 0),
       itemBuilder: (context, index) {

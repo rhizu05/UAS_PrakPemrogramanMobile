@@ -19,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _acceptTerms = false;
 
   @override
   void dispose() {
@@ -30,6 +31,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_acceptTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Anda harus menyetujui Syarat & Ketentuan'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final success = await authProvider.register(
@@ -47,12 +57,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           backgroundColor: AppColors.success,
         ),
       );
-      // Navigate back to Login Screen
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Registrasi gagal. Silakan coba lagi.'),
+          content: Text(
+            authProvider.errorMessage ?? 'Registrasi gagal. Silakan coba lagi.',
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -68,87 +79,97 @@ class _RegisterScreenState extends State<RegisterScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 16),
-                
-                // Material Icon Illustration
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.primarySoft,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.person_add_rounded,
-                    size: 64,
-                    color: AppColors.primary,
+                // Hero illustration (aspect-video, rounded-2xl)
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      'assets/images/auth/register_hero.png',
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: const Color(0xFFF8F9FC),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.image_outlined,
+                          size: 48,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                
                 const SizedBox(height: 24),
-                const Text(
-                  'Buat Akun',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                // Title block
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Buat Akun',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        height: 1.2,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Daftar untuk mulai belanja',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Daftar akun customer baru di Mobile Mart',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 36),
-
-                // Name Input
+                const SizedBox(height: 24),
+                // Form
                 CustomTextField(
                   controller: _nameController,
                   labelText: 'Nama Lengkap',
-                  hintText: 'Masukkan nama lengkap Anda',
-                  prefixIcon: Icons.person_outline_rounded,
+                  hintText: 'Masukkan nama lengkap',
+                  borderRadius: 12,
                   validator: ValidationHelper.validateName,
                 ),
-                
-                const SizedBox(height: 20),
-
-                // Email Input
+                const SizedBox(height: 12),
                 CustomTextField(
                   controller: _emailController,
                   labelText: 'Email',
-                  hintText: 'Masukkan email Anda',
-                  prefixIcon: Icons.email_outlined,
+                  hintText: 'nama@email.com',
+                  borderRadius: 12,
                   keyboardType: TextInputType.emailAddress,
                   validator: ValidationHelper.validateEmail,
                 ),
-                
-                const SizedBox(height: 20),
-
-                // Password Input
+                const SizedBox(height: 12),
                 CustomTextField(
                   controller: _passwordController,
                   labelText: 'Password',
-                  hintText: 'Masukkan password Anda',
-                  prefixIcon: Icons.lock_outline,
+                  hintText: 'Buat password minimal 8 karakter',
+                  borderRadius: 12,
                   isObscure: _obscurePassword,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _obscurePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
                       color: AppColors.secondary,
                     ),
                     onPressed: () {
@@ -159,40 +180,133 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   validator: ValidationHelper.validatePassword,
                 ),
-                
-                const SizedBox(height: 32),
-
-                // Register Button
+                const SizedBox(height: 16),
+                // Terms & Privacy checkbox
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Checkbox(
+                        value: _acceptTerms,
+                        onChanged: (v) =>
+                            setState(() => _acceptTerms = v ?? false),
+                        activeColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        side: const BorderSide(
+                          color: AppColors.border,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Wrap(
+                        children: [
+                          Text(
+                            'Saya setuju dengan ',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                              height: 1.4,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Halaman Syarat & Ketentuan'),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Syarat & Ketentuan',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            ' serta ',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                              height: 1.4,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Halaman Kebijakan Privasi'),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Kebijakan Privasi',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            ' Mobile Mart.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                // Register button (rounded-xl, h-14, primary)
                 CustomButton(
                   text: 'Daftar',
+                  height: 56,
+                  borderRadius: 12,
                   isLoading: authProvider.isLoading,
                   onPressed: _handleRegister,
                 ),
-
                 const SizedBox(height: 24),
-
-                // Navigation to Login
+                // Login link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Sudah memiliki akun? ',
-                      style: TextStyle(color: AppColors.textSecondary),
+                    Text(
+                      'Sudah punya akun? ',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: () => Navigator.pop(context),
                       child: const Text(
-                        'Login Sekarang',
+                        'Login',
                         style: TextStyle(
+                          fontSize: 14,
                           color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),

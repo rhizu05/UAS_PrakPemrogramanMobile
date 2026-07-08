@@ -10,14 +10,12 @@ class AdminService {
       ApiConstants.adminStats,
       requireAuth: true,
     );
-    
-    Map<String, dynamic> data = {};
-    if (response != null && response['data'] is Map) {
-      data = response['data'] as Map<String, dynamic>;
-    } else if (response is Map<String, dynamic>) {
-      data = response;
-    }
-    
+
+    final data =
+        _extractMapData(_readResponseField(response, 'data')) ??
+        _extractMapData(response) ??
+        {};
+
     return DashboardStatsModel.fromJson(data);
   }
 
@@ -27,28 +25,18 @@ class AdminService {
       ApiConstants.adminTopProducts,
       requireAuth: true,
     );
-    
-    List<dynamic> productsData = [];
-    if (response['data'] is List) {
-      productsData = response['data'];
-    } else if (response['data'] is Map) {
-      // If it's a Map, try to find a list inside it
-      final mapData = response['data'] as Map;
-      for (var value in mapData.values) {
-        if (value is List) {
-          productsData = value;
-          break;
-        }
-      }
-      // Or maybe it's directly the Map's values if the map is just { "0": {...}, "1": {...} }?
-      if (productsData.isEmpty) {
-         productsData = mapData.values.toList();
-      }
-    } else if (response is List) {
-      productsData = response;
-    }
 
-    return productsData.map((json) => TopProductModel.fromJson(json)).toList();
+    final productsData =
+        _extractListData(_readResponseField(response, 'data')) ??
+        _extractListData(response) ??
+        const [];
+
+    return productsData
+        .whereType<Map>()
+        .map(
+          (json) => TopProductModel.fromJson(Map<String, dynamic>.from(json)),
+        )
+        .toList();
   }
 
   // Fetch all customer orders (with optional status filter and pagination)
@@ -72,10 +60,19 @@ class AdminService {
       queryParams: queryParams,
     );
 
-    final List<dynamic> ordersData = response['data'] ?? [];
-    final orders = ordersData.map((json) => OrderModel.fromJson(json)).toList();
+    final ordersData =
+        _extractListData(_readResponseField(response, 'data')) ??
+        _extractListData(response) ??
+        const [];
+    final orders = ordersData
+        .whereType<Map>()
+        .map((json) => OrderModel.fromJson(Map<String, dynamic>.from(json)))
+        .toList();
 
-    final pagination = response['pagination'] ?? {};
+    final pagination =
+        _extractMapData(_readResponseField(response, 'pagination')) ??
+        _extractMapData(response) ??
+        {};
 
     return {
       'orders': orders,
@@ -89,10 +86,42 @@ class AdminService {
   Future<void> updateOrderStatus(String orderId, String newStatus) async {
     await ApiService.put(
       ApiConstants.updateOrderStatus(orderId),
-      body: {
-        'status': newStatus,
-      },
+      body: {'status': newStatus},
       requireAuth: true,
     );
+  }
+
+  Map<String, dynamic>? _extractMapData(dynamic value) {
+    if (value is Map<String, dynamic>) {
+      return value;
+    }
+    if (value is Map) {
+      return Map<String, dynamic>.fromEntries(
+        value.entries
+            .where((entry) => entry.value != null)
+            .map((entry) => MapEntry(entry.key.toString(), entry.value)),
+      );
+    }
+    return null;
+  }
+
+  dynamic _readResponseField(dynamic response, String field) {
+    if (response is Map) {
+      return response[field];
+    }
+    return null;
+  }
+
+  List<dynamic>? _extractListData(dynamic value) {
+    if (value is List<dynamic>) {
+      return value;
+    }
+    if (value is Map) {
+      final directList = value['products'] ?? value['orders'] ?? value['data'];
+      if (directList is List<dynamic>) {
+        return directList;
+      }
+    }
+    return null;
   }
 }

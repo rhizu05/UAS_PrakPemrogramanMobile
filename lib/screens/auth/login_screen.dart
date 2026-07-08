@@ -56,13 +56,17 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const CustomerMainNavigationScreen()),
+          MaterialPageRoute(
+            builder: (_) => const CustomerMainNavigationScreen(),
+          ),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Login gagal. Silakan coba lagi.'),
+          content: Text(
+            authProvider.errorMessage ?? 'Login gagal. Silakan coba lagi.',
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -77,69 +81,81 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 32),
-                
-                // Material Icon Illustration
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.primarySoft,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.login_rounded,
-                    size: 64,
-                    color: AppColors.primary,
+                // Hero illustration (aspect-video, rounded-2xl)
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      'assets/images/auth/login_hero.png',
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: AppColors.cardSoft,
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.image_outlined,
+                          size: 48,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                
                 const SizedBox(height: 24),
-                const Text(
-                  'Selamat Datang',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                // Title block
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Selamat Datang',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        height: 1.2,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Silakan masuk ke akun Anda',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Masuk ke akun Mobile Mart Anda',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 40),
-
-                // Email Input
+                const SizedBox(height: 24),
+                // Form
                 CustomTextField(
                   controller: _emailController,
                   labelText: 'Email',
-                  hintText: 'Masukkan email Anda',
-                  prefixIcon: Icons.email_outlined,
+                  hintText: 'example@mail.com',
+                  borderRadius: 12,
                   keyboardType: TextInputType.emailAddress,
                   validator: ValidationHelper.validateEmail,
                 ),
-                
-                const SizedBox(height: 20),
-
-                // Password Input
+                const SizedBox(height: 12),
                 CustomTextField(
                   controller: _passwordController,
                   labelText: 'Password',
                   hintText: 'Masukkan password Anda',
-                  prefixIcon: Icons.lock_outline,
+                  borderRadius: 12,
                   isObscure: _obscurePassword,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _obscurePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
                       color: AppColors.secondary,
                     ),
                     onPressed: () {
@@ -150,43 +166,50 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: ValidationHelper.validatePassword,
                 ),
-                
-                const SizedBox(height: 32),
-
-                // Login Button
+                const SizedBox(height: 24),
+                // Action
                 CustomButton(
-                  text: 'Login',
+                  text: 'Masuk',
+                  icon: Icons.login,
+                  height: 56,
+                  borderRadius: 9999,
                   isLoading: authProvider.isLoading,
                   onPressed: _handleLogin,
                 ),
-
                 const SizedBox(height: 24),
-
-                // Navigation to Register
+                // Footer link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'Belum punya akun? ',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterScreen(),
+                          ),
                         );
                       },
                       child: const Text(
                         'Daftar Sekarang',
                         style: TextStyle(
+                          fontSize: 14,
                           color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),

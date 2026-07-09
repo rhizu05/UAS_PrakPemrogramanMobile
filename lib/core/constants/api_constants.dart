@@ -1,5 +1,6 @@
 class ApiConstants {
-  static const String baseUrl = 'http://localhost:3000/api';
+  static const String baseUrl =
+      'https://uas-prak-pemrograman-mobile.vercel.app/api';
 
   // Auth Endpoints
   static const String register = '/auth/register';

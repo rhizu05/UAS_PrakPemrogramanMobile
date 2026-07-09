@@ -39,7 +39,16 @@ class OrderService {
       requireAuth: true,
     );
     
-    return OrderModel.fromJson(response['data']);
+    final data = response['data'];
+    if (data is List) {
+      if (data.isNotEmpty) {
+        return OrderModel.fromJson(Map<String, dynamic>.from(data.first as Map));
+      } else {
+        throw ApiException('Data pesanan kosong');
+      }
+    }
+    
+    return OrderModel.fromJson(Map<String, dynamic>.from(data as Map));
   }
 
   // Create new order (checkout)
@@ -64,7 +73,7 @@ class OrderService {
       requireAuth: true,
     );
 
-    final data = response['data'] ?? response;
+    final data = response['data']?['order'] ?? response['data'] ?? response;
     return OrderModel.fromJson(data);
   }
 }

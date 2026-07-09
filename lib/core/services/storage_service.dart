@@ -39,6 +39,16 @@ class StorageService {
     return await _prefs!.remove(key);
   }
 
+  // Onboarding Status
+  static Future<bool> saveOnboardingCompleted(bool completed) async {
+    if (_prefs == null) await init();
+    return await _prefs!.setBool('onboarding_completed', completed);
+  }
+
+  static bool isOnboardingCompleted() {
+    return _prefs?.getBool('onboarding_completed') ?? false;
+  }
+
   static Future<bool> clear() async {
     if (_prefs == null) await init();
     return await _prefs!.clear();

@@ -173,6 +173,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               CustomTextField(
                 controller: _phoneController,
                 labelText: 'Nomor Telepon',
+                hintText: 'Cth: 08123456789',
                 keyboardType: TextInputType.phone,
                 validator: ValidationHelper.validatePhone,
               ),
@@ -180,6 +181,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               CustomTextField(
                 controller: _addressController,
                 labelText: 'Alamat Pengiriman',
+                hintText: 'Cth: Jl. Merdeka No. 123, Jakarta',
                 maxLines: 3,
                 validator: ValidationHelper.validateAddress,
               ),

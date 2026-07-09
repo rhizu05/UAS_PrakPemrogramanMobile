@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Light Minimal Modern Palette
-  static const Color primary = Color(0xff2563eb);
-  static const Color primarySoft = Color(0xffdbeafe);
+  static const Color primary = Color(0xff84cc16);
+  static const Color primarySoft = Color(0xffecfccb);
   static const Color secondary = Color(0xff64748b);
   static const Color background = Color(0xfff8fafc);
   static const Color card = Color(0xffffffff);

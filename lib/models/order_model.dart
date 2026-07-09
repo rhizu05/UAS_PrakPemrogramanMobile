@@ -88,23 +88,32 @@ class OrderModel {
     var itemsList = <OrderItemModel>[];
     if (json['items'] is List) {
       itemsList = (json['items'] as List)
-          .map((item) => OrderItemModel.fromJson(item as Map<String, dynamic>))
+          .map((item) => OrderItemModel.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList();
     } else if (json['order_items'] is List) {
       itemsList = (json['order_items'] as List)
-          .map((item) => OrderItemModel.fromJson(item as Map<String, dynamic>))
+          .map((item) => OrderItemModel.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList();
     }
 
     // Try parsing customer info (joined profiles or user objects in admin queries)
     String? name = json['customer_name'] ?? json['customerName'];
     String? email = json['customer_email'] ?? json['customerEmail'];
-    if (json['user'] is Map<String, dynamic>) {
-      name = json['user']['full_name'] ?? json['user']['fullName'] ?? name;
-      email = json['user']['email'] ?? email;
-    } else if (json['profiles'] is Map<String, dynamic>) {
-      name = json['profiles']['full_name'] ?? json['profiles']['fullName'] ?? name;
-      email = json['profiles']['email'] ?? email;
+    if (json['user'] is Map) {
+      final userMap = Map<String, dynamic>.from(json['user'] as Map);
+      name = userMap['full_name'] ?? userMap['fullName'] ?? name;
+      email = userMap['email'] ?? email;
+    } else if (json['profiles'] is Map) {
+      final profilesMap = Map<String, dynamic>.from(json['profiles'] as Map);
+      name = profilesMap['full_name'] ?? profilesMap['fullName'] ?? name;
+      email = profilesMap['email'] ?? email;
+    } else if (json['profiles'] is List && (json['profiles'] as List).isNotEmpty) {
+      final firstProfile = (json['profiles'] as List).first;
+      if (firstProfile is Map) {
+        final profilesMap = Map<String, dynamic>.from(firstProfile);
+        name = profilesMap['full_name'] ?? profilesMap['fullName'] ?? name;
+        email = profilesMap['email'] ?? email;
+      }
     }
 
     double parsedTotal = double.tryParse((json['total'] ?? json['total_amount'] ?? json['totalAmount'] ?? json['grand_total'] ?? json['grandTotal'] ?? 0).toString()) ?? 0.0;

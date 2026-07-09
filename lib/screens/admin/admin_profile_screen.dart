@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:uas_prakpemrogramanmobile/core/helpers/validation_helper.dart';
 import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
 import 'package:uas_prakpemrogramanmobile/providers/auth_provider.dart';
+import 'package:uas_prakpemrogramanmobile/core/services/storage_service.dart';
 import 'package:uas_prakpemrogramanmobile/screens/auth/login_screen.dart';
-import 'package:uas_prakpemrogramanmobile/widgets/confirmation_dialog.dart';
-import 'package:uas_prakpemrogramanmobile/widgets/custom_button.dart';
+import 'package:uas_prakpemrogramanmobile/screens/onboarding/onboarding_screen.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/custom_text_field.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/loading_widget.dart';
 
@@ -20,25 +20,46 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+  bool _hasChanges = false;
 
   @override
   void initState() {
     super.initState();
+    _nameController.addListener(_checkChanges);
+    _phoneController.addListener(_checkChanges);
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       await authProvider.fetchProfile();
       if (authProvider.user != null) {
         _nameController.text = authProvider.user!.fullName;
         _phoneController.text = authProvider.user!.phone ?? '';
+        setState(() {
+          _hasChanges = false;
+        });
       }
     });
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_checkChanges);
+    _phoneController.removeListener(_checkChanges);
     _nameController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  void _checkChanges() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.user;
+    if (user != null) {
+      final nameChanged = _nameController.text.trim() != user.fullName;
+      final phoneChanged = _phoneController.text.trim() != (user.phone ?? '');
+      setState(() {
+        _hasChanges = nameChanged || phoneChanged;
+      });
+    }
   }
 
   Future<void> _handleUpdateProfile() async {
@@ -54,6 +75,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       if (!mounted) return;
 
       if (success) {
+        setState(() {
+          _hasChanges = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Profil Admin berhasil diperbarui!'),
@@ -71,163 +95,443 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     }
   }
 
-  void _handleLogout() {
-    showDialog(
+  void _showLogoutBottomSheet() {
+    showModalBottomSheet(
       context: context,
-      builder: (dialogContext) => ConfirmationDialog(
-        title: 'Konfirmasi Keluar',
-        message: 'Apakah Anda yakin ingin keluar dari aplikasi Admin?',
-        isDanger: true,
-        confirmText: 'Keluar',
-        onConfirm: () async {
-          final authProvider = Provider.of<AuthProvider>(context, listen: false);
-          await authProvider.logout();
-          
-          if (!mounted) return;
-          
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
-          );
-        },
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(32),
+            topRight: Radius.circular(32),
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Light red circle with Logout Icon
+            Container(
+              width: 64,
+              height: 64,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFEE2E2), // red-50
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.logout_rounded,
+                color: Color(0xFFEF4444),
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Title
+            const Text(
+              "Keluar dari Akun?",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Subtitle
+            const Text(
+              "Kamu akan keluar dari akun ini. Keranjang belanja akan dikosongkan.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 32),
+            // Buttons
+            Row(
+              children: [
+                // Batal Button (Outlined Grey)
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textPrimary,
+                      side: const BorderSide(color: AppColors.border, width: 1.5),
+                      minimumSize: const Size(0, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text("Batal", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Ya, Keluar Button (Solid Red)
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx); // close bottom sheet
+                      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                      await authProvider.logout();
+                      if (!mounted) return;
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF4444),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(0, 50),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text("Ya, Keluar", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return 'A';
+    final parts = name.trim().split(' ');
+    if (parts.length > 1) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
+    final initials = user != null ? _getInitials(user.fullName) : 'A';
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Profil Admin'),
-        elevation: 0,
-        backgroundColor: AppColors.card,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-            onPressed: _handleLogout,
-            tooltip: 'Logout',
-          ),
-        ],
-      ),
-      body: authProvider.isLoading && user == null
-          ? const LoadingWidget()
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  // User Avatar Header
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 24.0),
-                    decoration: BoxDecoration(
-                      color: AppColors.card,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Colors.red[50],
-                          child: Text(
-                            user != null && user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'A',
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
-                            ),
-                          ),
+      body: SafeArea(
+        child: authProvider.isLoading && user == null
+            ? const LoadingWidget()
+            : SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Custom Header (Figma 10:5500)
+                      const Text(
+                        "Profil Saya",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          user?.fullName ?? 'Administrator',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        "Kelola informasi akun dan data profil Anda.",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          user?.email ?? 'admin@admin.com',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red[100],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'ADMINISTRATOR',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                      ),
+                      const SizedBox(height: 20),
 
-                  // Update Profile Form
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Ubah Informasi Akun',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                      // Card 1: User Profile Header Card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200, width: 1.2),
+                        ),
+                        child: Row(
+                          children: [
+                            // Large Lime Avatar
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                initials,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Details column
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user?.fullName ?? 'Admin',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    user?.email ?? 'admin@admin.com',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  // Role Badge (Admin)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFDCFCE7), // light green-50 / green-100
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'Admin',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF15803D), // green-700
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Card 2: Edit Profil Form Card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200, width: 1.2),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Edit Profil",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Nama Lengkap Input
+                            const Text(
+                              "Nama Lengkap",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            CustomTextField(
+                              controller: _nameController,
+                              labelText: 'Nama Lengkap',
+                              showLabel: false,
+                              validator: ValidationHelper.validateName,
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Nomor Telepon Input
+                            const Text(
+                              "Nomor Telepon",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            CustomTextField(
+                              controller: _phoneController,
+                              labelText: 'Nomor Telepon',
+                              showLabel: false,
+                              keyboardType: TextInputType.phone,
+                              validator: ValidationHelper.validatePhone,
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Simpan Perubahan Button
+                            ElevatedButton(
+                              onPressed: _hasChanges ? _handleUpdateProfile : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _hasChanges ? AppColors.primary : const Color(0xFFD9F99D), // lime vs faded lime
+                                foregroundColor: Colors.white,
+                                disabledBackgroundColor: const Color(0xFFD9F99D),
+                                disabledForegroundColor: Colors.white,
+                                minimumSize: const Size(double.infinity, 50),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: const Text(
+                                "Simpan Perubahan",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Card 3: Keluar Button Card
+                      GestureDetector(
+                        onTap: _showLogoutBottomSheet,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFFEE2E2), width: 1.2), // light red border
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.logout_rounded,
+                                color: Color(0xFFEF4444), // red
+                                size: 20,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                "Keluar",
+                                style: TextStyle(
+                                  color: Color(0xFFEF4444), // red
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        CustomTextField(
-                          controller: _nameController,
-                          labelText: 'Nama Lengkap',
-                          validator: ValidationHelper.validateName,
-                          prefixIcon: Icons.person_outline,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Card 4: Developer Tools
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200, width: 1.2),
                         ),
-                        const SizedBox(height: 16),
-                        CustomTextField(
-                          controller: _phoneController,
-                          labelText: 'Nomor Telepon',
-                          keyboardType: TextInputType.phone,
-                          validator: ValidationHelper.validatePhone,
-                          prefixIcon: Icons.phone_outlined,
-                        ),
-                        const SizedBox(height: 24),
-                        CustomButton(
-                          text: 'Simpan Perubahan',
-                          isLoading: authProvider.isLoading,
-                          onPressed: _handleUpdateProfile,
-                        ),
-                        const SizedBox(height: 12),
-                        CustomButton(
-                          text: 'Keluar Akun Admin',
-                          isDanger: true,
-                          onPressed: _handleLogout,
-                        ),
-                      ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "DEVELOPER TOOLS",
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textSecondary,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton(
+                              onPressed: () async {
+                                final navigator = Navigator.of(context);
+                                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                await authProvider.logout();
+                                if (!mounted) return;
+                                navigator.pushAndRemoveUntil(
+                                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                  (route) => false,
+                                );
+                                scaffoldMessenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Sesi telah berakhir (Simulasi).'),
+                                    backgroundColor: AppColors.error,
+                                  ),
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.textPrimary,
+                                side: const BorderSide(color: AppColors.border, width: 1.5),
+                                minimumSize: const Size(double.infinity, 46),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                            ),
+                            child: const Text(
+                              "Simulasi Sesi Berakhir",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton(
+                            onPressed: () async {
+                              await StorageService.saveOnboardingCompleted(false);
+                              if (!context.mounted) return;
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+                                (route) => false,
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.textPrimary,
+                              side: const BorderSide(color: AppColors.border, width: 1.5),
+                              minimumSize: const Size(double.infinity, 46),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              "Lihat Onboarding",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  ],
                   ),
-                ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

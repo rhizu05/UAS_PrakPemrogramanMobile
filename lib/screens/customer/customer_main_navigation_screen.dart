@@ -11,11 +11,17 @@ class CustomerMainNavigationScreen extends StatefulWidget {
   const CustomerMainNavigationScreen({super.key});
 
   @override
-  State<CustomerMainNavigationScreen> createState() => _CustomerMainNavigationScreenState();
+  State<CustomerMainNavigationScreen> createState() => CustomerMainNavigationScreenState();
 }
 
-class _CustomerMainNavigationScreenState extends State<CustomerMainNavigationScreen> {
+class CustomerMainNavigationScreenState extends State<CustomerMainNavigationScreen> {
   int _currentIndex = 0;
+
+  void setSelectedIndex(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -51,9 +57,7 @@ class _CustomerMainNavigationScreenState extends State<CustomerMainNavigationScr
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
+            setSelectedIndex(index);
           },
           type: BottomNavigationBarType.fixed,
           backgroundColor: AppColors.card,

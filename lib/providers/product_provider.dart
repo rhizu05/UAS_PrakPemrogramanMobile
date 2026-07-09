@@ -28,6 +28,12 @@ class ProductProvider with ChangeNotifier {
   int _totalPages = 1;
   bool _hasMore = true;
 
+  // Review Pagination State
+  int _reviewCurrentPage = 1;
+  int _reviewTotalPages = 1;
+  int _reviewTotal = 0;
+  bool _isLoadingMoreReviews = false;
+
   // Active Query Parameters
   String? _searchQuery;
   String? _selectedCategoryId;
@@ -51,6 +57,11 @@ class ProductProvider with ChangeNotifier {
 
   bool get hasMore => _hasMore;
   int get currentPage => _currentPage;
+
+  // Review Pagination Getters
+  bool get reviewHasMore => _reviewCurrentPage < _reviewTotalPages;
+  int get reviewTotal => _reviewTotal;
+  bool get isLoadingMoreReviews => _isLoadingMoreReviews;
 
   String? get searchQuery => _searchQuery;
   String? get selectedCategoryId => _selectedCategoryId;
@@ -147,24 +158,56 @@ class ProductProvider with ChangeNotifier {
     }
   }
 
-  // Fetch Reviews by Product ID
+  // Fetch Reviews by Product ID (with pagination, limit 5 per page)
   Future<void> fetchProductReviews(String productId, {bool refresh = true}) async {
-    _isLoadingReviews = true;
-    _errorReviews = null;
-    if (refresh) _reviews = [];
-    notifyListeners();
-
-    try {
-      final result = await _reviewService.fetchProductReviews(productId, page: 1, limit: 20);
-      _reviews = result['reviews'];
+    if (refresh) {
+      _reviewCurrentPage = 1;
+      _reviewTotalPages = 1;
+      _reviewTotal = 0;
+      _isLoadingReviews = true;
       _errorReviews = null;
-    } catch (e) {
       _reviews = [];
-      _errorReviews = e.toString();
-    } finally {
-      _isLoadingReviews = false;
+      notifyListeners();
+    } else {
+      if (!reviewHasMore || _isLoadingMoreReviews) return;
+      _isLoadingMoreReviews = true;
       notifyListeners();
     }
+
+    try {
+      final result = await _reviewService.fetchProductReviews(
+        productId,
+        page: _reviewCurrentPage,
+        limit: 5,
+      );
+      _reviewCurrentPage = result['page'] + 1;
+      _reviewTotalPages = result['totalPages'];
+      _reviewTotal = result['total'];
+
+      if (refresh) {
+        _reviews = List<ReviewModel>.from(result['reviews']);
+      } else {
+        _reviews.addAll(List<ReviewModel>.from(result['reviews']));
+      }
+      _errorReviews = null;
+    } catch (e) {
+      if (refresh) {
+        _reviews = [];
+        _errorReviews = e.toString();
+      }
+    } finally {
+      if (refresh) {
+        _isLoadingReviews = false;
+      } else {
+        _isLoadingMoreReviews = false;
+      }
+      notifyListeners();
+    }
+  }
+
+  // Load next page of reviews
+  Future<void> fetchMoreReviews(String productId) async {
+    await fetchProductReviews(productId, refresh: false);
   }
 
   // Add Product Review

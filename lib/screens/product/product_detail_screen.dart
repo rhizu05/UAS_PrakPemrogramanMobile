@@ -13,6 +13,9 @@ import 'package:uas_prakpemrogramanmobile/widgets/custom_text_field.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/empty_state_widget.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/error_state_widget.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/loading_widget.dart';
+import 'package:uas_prakpemrogramanmobile/widgets/product_card.dart'; // For getCategoryBgColor, getCategoryFgColor
+import 'package:uas_prakpemrogramanmobile/screens/auth/login_screen.dart';
+import 'package:uas_prakpemrogramanmobile/screens/auth/register_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
@@ -30,6 +33,113 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final _reviewFormKey = GlobalKey<FormState>();
   final _commentController = TextEditingController();
   double _inputRating = 5.0;
+
+  void _showLoginRequiredBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(32),
+            topRight: Radius.circular(32),
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Light green circle with Profile Icon
+            Container(
+              width: 64,
+              height: 64,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1FBF0), // light green-50
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.person_outline_rounded,
+                color: AppColors.primary,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Title
+            const Text(
+              "Masuk Diperlukan",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Subtitle
+            const Text(
+              "Silakan masuk atau daftar untuk melanjutkan.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 32),
+            // Buttons
+            Row(
+              children: [
+                // Masuk Button (Solid Green)
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx); // close bottom sheet
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(0, 50),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text("Masuk", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Daftar Button (Outlined Green)
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx); // close bottom sheet
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary, width: 1.5),
+                      minimumSize: const Size(0, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text("Daftar", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -127,21 +237,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.isEmpty || parts[0].isEmpty) return 'U';
+    if (parts.length > 1 && parts[1].isNotEmpty) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ProductProvider>(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Detail Produk'),
-        elevation: 0,
-        backgroundColor: AppColors.card,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+      backgroundColor: Colors.white,
       body: _buildDetailBody(provider),
       bottomNavigationBar: _buildBottomCartSection(provider),
     );
@@ -166,231 +276,394 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
     }
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Large Image
-          AspectRatio(
-            aspectRatio: 1.2,
-            child: product.imageUrl != null && product.imageUrl!.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: product.imageUrl!,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: AppColors.cardSoft,
-                      child: const Center(child: CircularProgressIndicator()),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: AppColors.cardSoft,
-                      child: const Icon(Icons.broken_image_outlined, size: 64, color: AppColors.secondary),
-                    ),
-                  )
-                : Container(
-                    color: AppColors.cardSoft,
-                    child: const Icon(Icons.image_outlined, size: 64, color: AppColors.secondary),
-                  ),
-          ),
-          
-          // Info Container
-          Container(
-            color: AppColors.card,
-            padding: const EdgeInsets.all(16.0),
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Stack(
+      children: [
+        // Content Area (Scrollable product image + info container sheet)
+        Positioned.fill(
+          child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Category & Stock
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primarySoft,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        product.categoryName ?? 'Kategori',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                // Full Width Image at the top
+                SizedBox(
+                  height: 380,
+                  width: double.infinity,
+                  child: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: product.imageUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: AppColors.cardSoft,
+                            child: const Center(child: CircularProgressIndicator()),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: AppColors.cardSoft,
+                            child: const Icon(Icons.broken_image_outlined, size: 64, color: AppColors.secondary),
+                          ),
+                        )
+                      : Container(
+                          color: AppColors.cardSoft,
+                          child: const Icon(Icons.image_outlined, size: 64, color: AppColors.secondary),
                         ),
+                ),
+                
+                // Form/Info Bottom Sheet Container (Overlays top section via translate / spacing)
+                Transform.translate(
+                  offset: const Offset(0, -32),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(32),
+                        topRight: Radius.circular(32),
                       ),
                     ),
-                    Text(
-                      product.stock > 0 ? 'Stok: ${product.stock}' : 'Stok Habis',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: product.stock > 0 ? AppColors.success : AppColors.error,
-                      ),
+                    padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title
+                        Text(
+                          product.name,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Price & Rating Row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              CurrencyHelper.formatRupiah(product.price),
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                const Icon(Icons.star_rounded, color: AppColors.warning, size: 20),
+                                const SizedBox(width: 4),
+                                Text(
+                                  product.averageRating > 0
+                                      ? product.averageRating.toStringAsFixed(1)
+                                      : '0.0',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '(${product.totalReviews})',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Stock Status Badge
+                        _buildStockBadge(product.stock),
+                        const SizedBox(height: 24),
+
+                        const Divider(height: 1, color: AppColors.border),
+                        const SizedBox(height: 20),
+
+                        // Description Section
+                        const Text(
+                          'Deskripsi',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          product.description ?? 'Tidak ada deskripsi untuk produk ini.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade700,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        const Divider(height: 1, color: AppColors.border),
+                        const SizedBox(height: 20),
+
+                        // List Reviews Section Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Ulasan Pembeli',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            if (product.totalReviews > 0)
+                              Text(
+                                "★ ${product.averageRating.toStringAsFixed(1)} / 5",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildReviewsList(provider),
+                        const SizedBox(height: 24),
+
+                        const Divider(height: 1, color: AppColors.border),
+                        const SizedBox(height: 20),
+
+                        // Form Review Section
+                        Builder(
+                          builder: (context) {
+                            final isGuest = !context.watch<AuthProvider>().isAuthenticated;
+                            
+                            if (isGuest) {
+                              // Figma guest review card (10:4808)
+                              return GestureDetector(
+                                onTap: _showLoginRequiredBottomSheet,
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC), // slate-50
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: Colors.grey.shade200, width: 1.2),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 36,
+                                        height: 36,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFDCFCE7), // light green-50
+                                          shape: BoxShape.circle,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: const Icon(
+                                          Icons.person_outline_rounded,
+                                          color: AppColors.primary,
+                                          size: 18,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "Tulis Ulasan",
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            const Text(
+                                              "Masuk untuk membagikan pendapatmu",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return Form(
+                              key: _reviewFormKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Tulis Ulasan',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  
+                                  // Star Selection (5/5)
+                                  RatingBar.builder(
+                                    initialRating: _inputRating,
+                                    minRating: 1,
+                                    direction: Axis.horizontal,
+                                    allowHalfRating: false,
+                                    itemCount: 5,
+                                    itemPadding: const EdgeInsets.only(right: 8.0),
+                                    itemBuilder: (context, _) => const Icon(
+                                      Icons.star_rounded,
+                                      color: AppColors.warning,
+                                    ),
+                                    onRatingUpdate: (rating) {
+                                      setState(() {
+                                        _inputRating = rating;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  
+                                  // Comment input
+                                  CustomTextField(
+                                    controller: _commentController,
+                                    labelText: 'Komentar Ulasan',
+                                    showLabel: false,
+                                    hintText: 'Bagikan pendapatmu tentang produk ini.',
+                                    validator: (val) {
+                                      if (val == null || val.trim().isEmpty) {
+                                        return 'Komentar tidak boleh kosong';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  
+                                  // Kirim button
+                                  CustomButton(
+                                    text: 'Kirim Ulasan',
+                                    isLoading: provider.isAddingReview,
+                                    onPressed: _handleSubmitReview,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                
-                // Name
-                Text(
-                  product.name,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                // Price
-                Text(
-                  CurrencyHelper.formatRupiah(product.price),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
-                
-                // Average Rating Overview
-                if (product.totalReviews > 0) ...[
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      RatingBarIndicator(
-                        rating: product.averageRating,
-                        itemBuilder: (context, index) => const Icon(
-                          Icons.star,
-                          color: AppColors.warning,
-                        ),
-                        itemCount: 5,
-                        itemSize: 18.0,
-                        direction: Axis.horizontal,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${product.averageRating.toStringAsFixed(1)} (${product.totalReviews} Ulasan)',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                
-                const Divider(height: 32, color: AppColors.border),
-                
-                // Description
-                const Text(
-                  'Deskripsi Produk',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  product.description ?? 'Tidak ada deskripsi untuk produk ini.',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                    height: 1.5,
                   ),
                 ),
               ],
             ),
           ),
-          
-          const SizedBox(height: 12),
-          
-          // Form Review Section
-          Container(
-            color: AppColors.card,
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _reviewFormKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Berikan Ulasan Anda',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // Rating Input
-                  RatingBar.builder(
-                    initialRating: _inputRating,
-                    minRating: 1,
-                    direction: Axis.horizontal,
-                    allowHalfRating: false,
-                    itemCount: 5,
-                    itemPadding: const EdgeInsets.only(right: 8.0),
-                    itemBuilder: (context, _) => const Icon(
-                      Icons.star,
-                      color: AppColors.warning,
-                    ),
-                    onRatingUpdate: (rating) {
-                      _inputRating = rating;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Comment Text Field
-                  CustomTextField(
-                    controller: _commentController,
-                    labelText: 'Komentar Ulasan',
-                    hintText: 'Tulis tanggapan Anda mengenai produk ini',
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
-                        return 'Komentar tidak boleh kosong';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Submit Review Button
-                  CustomButton(
-                    text: 'Kirim Ulasan',
-                    isLoading: provider.isAddingReview,
-                    onPressed: _handleSubmitReview,
+        ),
+
+        // Top Navigation Overlays (Melayang)
+        // 1. Back button (top left overlay)
+        Positioned(
+          left: 16,
+          top: topPadding + 10,
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 16,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
-          
-          const SizedBox(height: 12),
-          
-          // List Reviews Section
-          Container(
-            color: AppColors.card,
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Ulasan Pembeli',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+        ),
+
+        // 2. Category badge (top right overlay)
+        Positioned(
+          right: 16,
+          top: topPadding + 10,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: getCategoryBgColor(product.categoryName),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
-                const SizedBox(height: 12),
-                _buildReviewsList(provider),
               ],
             ),
+            child: Text(
+              product.categoryName ?? 'Kategori',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: getCategoryFgColor(product.categoryName),
+              ),
+            ),
           ),
-          const SizedBox(height: 24),
-        ],
+        ),
+      ],
+    );
+  }
+
+  // Stock status helper badge
+  Widget _buildStockBadge(int stock) {
+    Color bg;
+    Color fg;
+    String label;
+
+    if (stock > 10) {
+      bg = const Color(0xFFDCFCE7); // green-50
+      fg = const Color(0xFF16A34A); // green-600
+      label = "Stok Tersedia";
+    } else if (stock > 0) {
+      bg = const Color(0xFFFFEDD5);
+      fg = const Color(0xFFEA580C); // orange-600
+      label = "Sisa $stock item";
+    } else {
+      bg = const Color(0xFFFEE2E2); // red-50
+      fg = const Color(0xFFDC2626); // red-600
+      label = "Stok Habis";
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          color: fg,
+        ),
       ),
     );
   }
@@ -428,81 +701,167 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     final user = context.read<AuthProvider>().user;
     final currentUserId = user?.id;
+    final remaining = provider.reviewTotal - provider.reviews.length;
 
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: provider.reviews.length,
-      separatorBuilder: (_, _) => const Divider(color: AppColors.border, height: 24),
-      itemBuilder: (context, index) {
-        final review = provider.reviews[index];
-        final isOwnReview = currentUserId != null &&
-            review.reviewerId != null &&
-            review.reviewerId == currentUserId;
+    return Column(
+      children: [
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: provider.reviews.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final review = provider.reviews[index];
+            final isOwnReview = currentUserId != null &&
+                review.reviewerId != null &&
+                review.reviewerId == currentUserId;
+            final initials = _getInitials(review.reviewerName);
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    review.reviewerName,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+            // Figma styled review card
+            return Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFc),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200, width: 1),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Reviewer Avatar Circle
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primarySoft,
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          initials,
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      
+                      // Name and Stars
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              review.reviewerName,
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            RatingBarIndicator(
+                              rating: review.rating.toDouble(),
+                              itemBuilder: (context, index) => const Icon(
+                                Icons.star_rounded,
+                                color: AppColors.warning,
+                              ),
+                              itemCount: 5,
+                              itemSize: 14.0,
+                              direction: Axis.horizontal,
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Date and delete action
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            DateHelper.formatDate(review.createdAt),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          if (isOwnReview) ...[
+                            const SizedBox(height: 2),
+                            GestureDetector(
+                              onTap: provider.isDeletingReview
+                                  ? null
+                                  : () => _confirmDeleteReview(provider, review.id),
+                              child: const Icon(
+                                Icons.delete_outline_rounded,
+                                color: AppColors.error,
+                                size: 18,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Comment body
+                  if (review.comment != null && review.comment!.isNotEmpty)
+                    Text(
+                      review.comment!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade800,
+                        height: 1.4,
+                      ),
                     ),
-                  ),
-                ),
-                Text(
-                  DateHelper.formatDate(review.createdAt),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                if (isOwnReview) ...[
-                  const SizedBox(width: 4),
-                  SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      iconSize: 18,
-                      icon: const Icon(Icons.delete_outline, color: AppColors.error),
-                      onPressed: provider.isDeletingReview
-                          ? null
-                          : () => _confirmDeleteReview(provider, review.id),
-                    ),
-                  ),
                 ],
-              ],
-            ),
-            const SizedBox(height: 4),
-            RatingBarIndicator(
-              rating: review.rating.toDouble(),
-              itemBuilder: (context, index) => const Icon(
-                Icons.star,
-                color: AppColors.warning,
               ),
-              itemCount: 5,
-              itemSize: 14.0,
-              direction: Axis.horizontal,
-            ),
-            const SizedBox(height: 8),
-            if (review.comment != null && review.comment!.isNotEmpty)
-              Text(
-                review.comment!,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        if (provider.isLoadingMoreReviews)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
-          ],
-        );
-      },
+            ),
+          )
+        else if (provider.reviewHasMore)
+          OutlinedButton(
+            onPressed: () => provider.fetchMoreReviews(widget.productId),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: const BorderSide(color: AppColors.primary, width: 1),
+              minimumSize: const Size(double.infinity, 44),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Muat ${remaining > 5 ? 5 : remaining} ulasan lainnya',
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+          )
+        else if (provider.reviewTotal > 5)
+          Center(
+            child: Text(
+              'Menampilkan semua ${provider.reviewTotal} ulasan',
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -510,72 +869,76 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final product = provider.detailProduct;
     if (product == null) return const SizedBox.shrink();
 
+    final isOutOfStock = product.stock == 0;
+
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: const BoxDecoration(
         color: AppColors.card,
         border: Border(
           top: BorderSide(color: AppColors.border, width: 1),
         ),
       ),
-      child: Row(
-        children: [
-          // Total price estimate
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Harga',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+      child: SafeArea(
+        child: Consumer<CartProvider>(
+          builder: (consumerContext, cartProvider, child) {
+            return ElevatedButton(
+              onPressed: isOutOfStock
+                  ? null
+                  : () async {
+                      final isGuest = !context.read<AuthProvider>().isAuthenticated;
+                      if (isGuest) {
+                        _showLoginRequiredBottomSheet();
+                        return;
+                      }
+
+                      final success = await cartProvider.addToCart(product.id);
+                      if (!mounted) return;
+                      if (success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${product.name} berhasil ditambahkan!'),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(cartProvider.errorMessage ?? 'Gagal menambahkan ke keranjang'),
+                            backgroundColor: AppColors.error,
+                          ),
+                        );
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isOutOfStock ? Colors.grey.shade300 : AppColors.primary,
+                foregroundColor: isOutOfStock ? Colors.grey.shade500 : Colors.white,
+                minimumSize: const Size(double.infinity, 54),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                Text(
-                  CurrencyHelper.formatRupiah(product.price),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isOutOfStock ? Icons.remove_shopping_cart : Icons.shopping_cart_outlined,
+                    size: 20,
                   ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Cart Button
-          SizedBox(
-            width: 180,
-            child: Consumer<CartProvider>(
-              builder: (consumerContext, cartProvider, child) {
-                return CustomButton(
-                  text: 'Beli Sekarang',
-                  isLoading: cartProvider.isLoading,
-                  onPressed: product.stock > 0
-                      ? () async {
-                          final success = await cartProvider.addToCart(product.id);
-                          if (!mounted) return;
-                          if (success) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Produk berhasil ditambahkan ke keranjang!'),
-                                backgroundColor: AppColors.success,
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(cartProvider.errorMessage ?? 'Gagal menambahkan produk ke keranjang'),
-                                backgroundColor: AppColors.error,
-                              ),
-                            );
-                          }
-                        }
-                      : null, // Disabled if stock is 0
-                );
-              }
-            ),
-          ),
-        ],
+                  const SizedBox(width: 8),
+                  Text(
+                    isOutOfStock ? "Stok Habis" : "Tambah ke Keranjang",
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        ),
       ),
     );
   }

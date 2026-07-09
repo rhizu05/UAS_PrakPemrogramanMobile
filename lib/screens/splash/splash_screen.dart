@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
+import 'package:uas_prakpemrogramanmobile/core/services/storage_service.dart';
 import 'package:uas_prakpemrogramanmobile/providers/auth_provider.dart';
 import 'package:uas_prakpemrogramanmobile/screens/admin/admin_main_navigation_screen.dart';
-import 'package:uas_prakpemrogramanmobile/screens/auth/login_screen.dart';
 import 'package:uas_prakpemrogramanmobile/screens/customer/customer_main_navigation_screen.dart';
+import 'package:uas_prakpemrogramanmobile/screens/onboarding/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,49 +17,52 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late final AnimationController _fadeController;
-  late final AnimationController _pulseController;
-  late final Animation<double> _pulseAnimation;
-  late final AnimationController _progressController;
+  late final AnimationController _scaleController;
 
   @override
   void initState() {
     super.initState();
 
-    // Fade-in on first frame (0.8s ease-out, with subtle rise).
+    // Premium entrance animation: fade-in and scale-up
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
-    )..forward();
-
-    // Slow pulse for the "Starting up..." text.
-    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+    );
+    
+    _scaleController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+      duration: const Duration(milliseconds: 1000),
+      lowerBound: 0.85,
+      upperBound: 1.0,
     );
 
-    // Continuous loading bar progress (matches @keyframes progress).
-    _progressController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2500),
-    )..repeat();
+    _fadeController.forward();
+    _scaleController.forward();
 
-    _checkAuth();
+    _checkAuthAndOnboarding();
   }
 
   @override
   void dispose() {
     _fadeController.dispose();
-    _pulseController.dispose();
-    _progressController.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
 
-  Future<void> _checkAuth() async {
+  Future<void> _checkAuthAndOnboarding() async {
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
+
+    // Check if onboarding is completed
+    final bool onboardingCompleted = StorageService.isOnboardingCompleted();
+    
+    if (!onboardingCompleted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      );
+      return;
+    }
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final isAuthenticated = await authProvider.tryAutoLogin();
@@ -82,7 +86,9 @@ class _SplashScreenState extends State<SplashScreen>
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (_) => const CustomerMainNavigationScreen(),
+        ),
       );
     }
   }
@@ -91,200 +97,216 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primary,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Decorative corner brackets (opacity 30%, 64x64, 2px white outer borders)
-            const _CornerBracket(top: true, left: true),
-            const _CornerBracket(top: true, left: false),
-            const _CornerBracket(top: false, left: true),
-            const _CornerBracket(top: false, left: false),
+      body: Stack(
+        children: [
+          // Background blobs from Figma (Circle ornaments)
+          // 1. Top Right Circle (width 320, height 320, x=153.6, y=-80)
+          Positioned(
+            right: -80,
+            top: -80,
+            child: Container(
+              width: 320,
+              height: 320,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          // 2. Bottom Left Circle (width 224, height 224, x=-64, y=668)
+          Positioned(
+            left: -64,
+            bottom: -40,
+            child: Container(
+              width: 224,
+              height: 224,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          // 3. Middle Right Circle (width 128, height 128, x=233.6, y=596)
+          Positioned(
+            right: 32,
+            bottom: 128,
+            child: Container(
+              width: 128,
+              height: 128,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
 
-            // Central logo + brand block with fade-in animation
-            Center(
-              child: FadeTransition(
-                opacity: _fadeController,
+          // Central Logo & Brand
+          Center(
+            child: FadeTransition(
+              opacity: _fadeController,
+              child: ScaleTransition(
+                scale: _scaleController,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Logo card: 96x96 white rounded-xl, smartphone icon
+                    // Logo Card: 96x96 white rounded, with CustomPaint Shopping Bag Icon
                     Container(
                       width: 96,
                       height: 96,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.25),
+                            color: Colors.black.withValues(alpha: 0.15),
                             blurRadius: 24,
                             offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.smartphone,
-                        size: 60,
-                        color: AppColors.primary,
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: CustomPaint(
+                          painter: ShoppingBagPainter(
+                            color: AppColors.primary,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
-                    // Brand name + tagline
-                    const Column(
-                      children: [
-                        Text(
-                          'Mobile Mart',
-                          style: TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: -0.7,
-                            height: 1.0,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'YOUR DIGITAL MARKETPLACE',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                            letterSpacing: 2.0,
-                          ),
-                        ),
-                      ],
+                    // Brand Name
+                    const Text(
+                      'LimeCart',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: -0.7,
+                        height: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Tagline
+                    const Text(
+                      'Belanja mudah, harga terbaik',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                        letterSpacing: 0.2,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
+          ),
 
-            // Bottom loading bar + status text
-            Positioned(
-              left: 48, // px-12 ≈ 48
-              right: 48,
-              bottom: 64,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Loading bar track
-                  Container(
-                    width: 200,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(9999),
-                      child: AnimatedBuilder(
-                        animation: _progressController,
-                        builder: (context, _) {
-                          // Reproduce the @keyframes progress: 0% → 50% → 100%
-                          // 0%  : width 0%,   left 0%
-                          // 50% : width 40%,  left 30%
-                          // 100%: width 0%,   left 100%
-                          const trackWidth = 200.0;
-                          final t = _progressController.value;
-                          double widthPct;
-                          double leftPct;
-                          if (t < 0.5) {
-                            final p = t * 2; // 0..1
-                            widthPct = 40 * p;
-                            leftPct = 30 * p;
-                          } else {
-                            final p = (t - 0.5) * 2; // 0..1
-                            widthPct = 40 * (1 - p);
-                            leftPct = 30 + 70 * p;
-                          }
-                          return Stack(
-                            children: [
-                              Positioned(
-                                left: leftPct / 100 * trackWidth,
-                                top: 0,
-                                bottom: 0,
-                                child: Container(
-                                  width: widthPct / 100 * trackWidth,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(9999),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
+          // Bottom page dots
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 64,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 16),
-                  // "Starting up..." with slow pulse opacity
-                  FadeTransition(
-                    opacity: _pulseAnimation,
-                    child: const Text(
-                      'Starting up...',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
-                    ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Decorative corner bracket: 64x64, 2px white outer border, 30% opacity.
-class _CornerBracket extends StatelessWidget {
-  const _CornerBracket({required this.top, required this.left});
+/// Custom Painter to draw the Figma-like LimeCart Shopping Bag Icon
+class ShoppingBagPainter extends CustomPainter {
+  final Color color;
 
-  final bool top;
-  final bool left;
+  ShoppingBagPainter({required this.color});
 
   @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      top: top ? 16 : null,
-      bottom: !top ? 16 : null,
-      left: left ? 16 : null,
-      right: !left ? 16 : null,
-      child: IgnorePointer(
-        child: Opacity(
-          opacity: 0.3,
-          child: Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              border: Border(
-                top: top
-                    ? const BorderSide(color: Colors.white, width: 2)
-                    : BorderSide.none,
-                bottom: !top
-                    ? const BorderSide(color: Colors.white, width: 2)
-                    : BorderSide.none,
-                left: left
-                    ? const BorderSide(color: Colors.white, width: 2)
-                    : BorderSide.none,
-                right: !left
-                    ? const BorderSide(color: Colors.white, width: 2)
-                    : BorderSide.none,
-              ),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(top && left ? 12 : 0),
-                topRight: Radius.circular(top && !left ? 12 : 0),
-                bottomLeft: Radius.circular(!top && left ? 12 : 0),
-                bottomRight: Radius.circular(!top && !left ? 12 : 0),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+
+    // 1. Draw the bag body (rounded corner container at the bottom)
+    final bodyPath = Path()
+      ..moveTo(w * 0.15, h * 0.38)
+      ..lineTo(w * 0.85, h * 0.38)
+      ..lineTo(w * 0.85, h * 0.78)
+      ..arcToPoint(
+        Offset(w * 0.73, h * 0.88),
+        radius: Radius.circular(w * 0.12),
+        clockwise: true,
+      )
+      ..lineTo(w * 0.27, h * 0.88)
+      ..arcToPoint(
+        Offset(w * 0.15, h * 0.78),
+        radius: Radius.circular(w * 0.12),
+        clockwise: true,
+      )
+      ..close();
+    canvas.drawPath(bodyPath, paint);
+
+    // 2. Draw the flap/opening line of the bag (horizontal line at the top body)
+    final flapPath = Path()
+      ..moveTo(w * 0.15, h * 0.48)
+      ..lineTo(w * 0.85, h * 0.48);
+    canvas.drawPath(flapPath, paint);
+
+    // 3. Draw the handle (loop at the top)
+    final handlePath = Path()
+      ..moveTo(w * 0.35, h * 0.38)
+      ..cubicTo(
+        w * 0.35, h * 0.15,
+        w * 0.65, h * 0.15,
+        w * 0.65, h * 0.38,
+      );
+    canvas.drawPath(handlePath, paint);
+
+    // 4. Draw the smile-like curve on the pocket
+    final smilePath = Path()
+      ..moveTo(w * 0.42, h * 0.62)
+      ..quadraticBezierTo(w * 0.5, h * 0.70, w * 0.58, h * 0.62);
+    canvas.drawPath(smilePath, paint);
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

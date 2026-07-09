@@ -129,6 +129,30 @@ class AdminProvider with ChangeNotifier {
         localOrders = decoded.map((json) => OrderModel.fromJson(json)).toList();
       } catch (_) {}
       
+      // Enrich local orders that don't have customerName from API orders
+      final apiCustomerMap = <String, String>{};
+      for (final apiOrder in fetchedOrders) {
+        if (apiOrder.customerName != null && apiOrder.customerName!.trim().isNotEmpty) {
+          apiCustomerMap[apiOrder.id] = apiOrder.customerName!;
+        }
+      }
+      localOrders = localOrders.map((o) {
+        if ((o.customerName == null || o.customerName!.trim().isEmpty) && apiCustomerMap.containsKey(o.id)) {
+          return OrderModel(
+            id: o.id,
+            status: o.status,
+            total: o.total,
+            shippingAddress: o.shippingAddress,
+            note: o.note,
+            createdAt: o.createdAt,
+            items: o.items,
+            customerName: apiCustomerMap[o.id],
+            customerEmail: o.customerEmail,
+          );
+        }
+        return o;
+      }).toList();
+      
       final localIds = localOrders.map((o) => o.id).toSet();
       final filteredApi = fetchedOrders.where((o) => !localIds.contains(o.id)).toList();
       

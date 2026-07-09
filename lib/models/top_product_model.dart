@@ -36,7 +36,7 @@ class TopProductModel {
       name: name,
       imageUrl: imgUrl,
       soldCount: int.tryParse((json['sold_quantity'] ?? json['soldCount'] ?? json['sold_count'] ?? json['total_sold'] ?? json['quantity'] ?? 0).toString()) ?? 0,
-      totalSales: double.tryParse((json['total_sales'] ?? json['totalSales'] ?? json['revenue'] ?? 0).toString()) ?? 0.0,
+      totalSales: double.tryParse((json['total_sales'] ?? json['totalSales'] ?? json['total_revenue'] ?? json['revenue'] ?? 0).toString()) ?? 0.0,
     );
   }
 

@@ -22,8 +22,6 @@ Aplikasi ini memiliki sistem otorisasi tingkat peran (Role-Based Authorization) 
 ---
 
 ## 🎨 Screenshot Aplikasi
-*(Catatan: Silakan letakkan gambar screenshot berukuran proporsional pada folder `docs/screenshots/`)*
-
 | Halaman Splash & Login | Katalog & Detail Produk | Keranjang Belanja & Checkout |
 | :---: | :---: | :---: |
 | ![Login](./docs/screenshots/login.png) <br> *Halaman Login* | ![Catalog](./docs/screenshots/catalog.png) <br> *Beranda Produk & Filter* | ![Cart](./docs/screenshots/cart.png) <br> *Keranjang & Checkout* |
@@ -54,7 +52,7 @@ Aplikasi ini memiliki sistem otorisasi tingkat peran (Role-Based Authorization) 
 
 ## 🔑 Kredensial Pengujian
 Untuk masuk sebagai Administrator Toko:
-*   **Email**: `admin@admin.com`
+*   **Email**: `admin@example.com`
 *   **Password**: `admin123`
 
 ---
@@ -109,7 +107,3 @@ Setelah kompilasi selesai, berkas APK rilis akan tersimpan di direktori berikut:
 📁 **`build/app/outputs/flutter-apk/app-release.apk`**
 
 ---
-
-## 🎥 Link Video Demo Aplikasi
-Berikut adalah rekaman video demonstrasi seluruh fitur aplikasi Mobile Mart (Login/Register, Pembelian Customer, dan Dashboard Admin):
-🔗 **[Link Video Demo Aplikasi (YouTube / Google Drive Placeholder)](#)**

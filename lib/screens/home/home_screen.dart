@@ -382,24 +382,69 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Title Section "Produk Terbaru"
+              // Title Section "Produk" with Sort
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    "Produk Terbaru",
+                    "Produk",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  Text(
-                    "${productProvider.products.length} produk",
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
+                  Row(
+                    children: [
+                      PopupMenuButton<String>(
+                        onSelected: (value) {
+                          productProvider.updateFilters(sort: value);
+                        },
+                        offset: const Offset(0, 40),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        itemBuilder: (context) => [
+                          _buildSortItem('newest', Icons.access_time_rounded, 'Terbaru', productProvider.selectedSort),
+                          _buildSortItem('price_asc', Icons.arrow_upward_rounded, 'Termurah', productProvider.selectedSort),
+                          _buildSortItem('price_desc', Icons.arrow_downward_rounded, 'Termahal', productProvider.selectedSort),
+                        ],
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.sort_rounded,
+                                size: 16,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _sortLabel(productProvider.selectedSort),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "${productProvider.products.length} produk",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -410,6 +455,41 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  String _sortLabel(String? sort) {
+    switch (sort) {
+      case 'price_asc':
+        return 'Termurah';
+      case 'price_desc':
+        return 'Termahal';
+      default:
+        return 'Terbaru';
+    }
+  }
+
+  PopupMenuItem<String> _buildSortItem(String value, IconData icon, String label, String? current) {
+    final isSelected = current == value;
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: isSelected ? AppColors.primary : AppColors.textSecondary),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? AppColors.primary : AppColors.textPrimary,
+            ),
+          ),
+          const Spacer(),
+          if (isSelected)
+            const Icon(Icons.check_rounded, size: 18, color: AppColors.primary),
+        ],
       ),
     );
   }

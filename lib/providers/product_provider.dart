@@ -116,7 +116,14 @@ class ProductProvider with ChangeNotifier {
       } else {
         _products.addAll(fetchedProducts);
       }
-      
+
+      // Urutkan: stok habis di paling bawah
+      _products.sort((a, b) {
+        if (a.stock == 0 && b.stock > 0) return 1;
+        if (a.stock > 0 && b.stock == 0) return -1;
+        return 0;
+      });
+
       _errorMessage = null;
     } catch (e) {
       if (refresh) {

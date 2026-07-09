@@ -155,6 +155,7 @@ class OrderProvider with ChangeNotifier {
     required String address,
     required String phone,
     String? notes,
+    String? customerName,
   }) async {
     _isCreatingOrder = true;
     notifyListeners();
@@ -170,7 +171,11 @@ class OrderProvider with ChangeNotifier {
       try {
         final listJson = StorageService.getString('local_checkout_orders') ?? '[]';
         final List<dynamic> decoded = jsonDecode(listJson);
-        decoded.insert(0, order.toJson());
+        final orderJson = order.toJson();
+        if (customerName != null && customerName.trim().isNotEmpty) {
+          orderJson['customer_name'] = customerName.trim();
+        }
+        decoded.insert(0, orderJson);
         await StorageService.saveString('local_checkout_orders', jsonEncode(decoded));
       } catch (e) {
         print('Failed to save order to local storage: $e');

@@ -576,7 +576,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       child: _buildInfoItem(
                         Icons.person_outline_rounded,
                         "PEMESAN",
-                        order.customerName ?? '-',
+                        order.customerName ?? 'Pengguna',
                       ),
                     ),
                   ],

@@ -53,12 +53,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         message: 'Apakah Anda yakin ingin menyelesaikan pesanan ini?',
         onConfirm: () async {
           final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
           
           try {
             final success = await orderProvider.createOrder(
               address: _addressController.text,
               phone: _phoneController.text,
               notes: _notesController.text,
+              customerName: authProvider.user?.fullName,
             );
 
             if (!mounted) return;

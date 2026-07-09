@@ -147,7 +147,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const LoginScreen()),
+                              MaterialPageRoute(
+                                builder: (_) => const LoginScreen(),
+                              ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -279,7 +281,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             onSelected: (selected) {
                               if (selected) {
                                 categoryProvider.selectCategory(catId);
-                                productProvider.updateFilters(categoryId: catId);
+                                productProvider.updateFilters(
+                                  categoryId: catId,
+                                );
                               }
                             },
                           );
@@ -308,15 +312,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Image.network(
                           'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80', // Shopping theme
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: const Color(0xFFD9F99D),
-                            alignment: Alignment.center,
-                            child: const Icon(
-                              Icons.shopping_bag_outlined,
-                              color: Color(0xFF4D7C0F),
-                              size: 40,
-                            ),
-                          ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                color: const Color(0xFFD9F99D),
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.shopping_bag_outlined,
+                                  color: Color(0xFF4D7C0F),
+                                  size: 40,
+                                ),
+                              ),
                         ),
                       ),
                     ),
@@ -329,10 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Container(
                           decoration: const BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [
-                                Color(0xFFEDF8D3),
-                                Colors.transparent,
-                              ],
+                              colors: [Color(0xFFEDF8D3), Colors.transparent],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
@@ -342,7 +344,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     // Left Text Column Content
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -352,7 +357,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF365314), // Dark forest green (green-900)
+                              color: Color(
+                                0xFF365314,
+                              ), // Dark forest green (green-900)
                               height: 1.15,
                             ),
                           ),
@@ -361,7 +368,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             "Temukan berbagai produk pilihan\nuntuk kebutuhan harianmu.",
                             style: TextStyle(
                               fontSize: 11,
-                              color: Color(0xFF4D7C0F), // Medium green (green-700)
+                              color: Color(
+                                0xFF4D7C0F,
+                              ), // Medium green (green-700)
                               height: 1.3,
                             ),
                           ),
@@ -439,7 +448,8 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.only(bottom: 16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.65, // Adjusted from 0.72 to 0.65 for extra vertical room
+        childAspectRatio:
+            0.65, // Adjusted from 0.72 to 0.65 for extra vertical room
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),

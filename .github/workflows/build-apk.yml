@@ -2,12 +2,15 @@ name: Build APK
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -23,4 +26,10 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: latest
+          name: "Rilis Terbaru (Auto-build)"
+          body: "Pembaruan otomatis dari branch utama pada commit ${{ github.sha }}."
+          draft: false
+          prerelease: false
+          overwrite: true
           files: build/app/outputs/flutter-apk/app-release.apk

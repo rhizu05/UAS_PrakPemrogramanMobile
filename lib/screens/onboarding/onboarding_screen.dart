@@ -375,8 +375,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           // Floating Category Bubbles (coordinates mapped closely to Figma)
           // 1. Fashion (Top)
           Positioned(
-            top: 0,
-            left: 140,
+            top: 35,
+            left: 50,
             child: _floatingBubble(
               icon: Icons.checkroom,
               label: "Fashion",
@@ -397,7 +397,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           // 3. Makanan (Middle Right)
           Positioned(
-            top: 150,
+            top: 120,
             right: 10,
             child: _floatingBubble(
               icon: Icons.restaurant,
@@ -441,7 +441,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           // 7. Elektronik (Middle Left)
           Positioned(
-            top: 85,
+            top: 120,
             left: 15,
             child: _floatingBubble(
               icon: Icons.devices,

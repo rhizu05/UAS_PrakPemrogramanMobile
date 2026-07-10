@@ -152,7 +152,7 @@ export const getTopProducts = async (req, res) => {
     //  sehingga agregasi dilakukan di sisi server aplikasi.)
     const { data: orderItems, error } = await supabaseAdmin
       .from('order_items')
-      .select('product_id, product_name, quantity, price');
+      .select('product_id, product_name, quantity, price, products(image_url)');
 
     if (error) {
       return errorResponse(res, `Gagal mengambil data penjualan: ${error.message}`, 500);
@@ -168,6 +168,7 @@ export const getTopProducts = async (req, res) => {
         aggregated[key] = {
           product_id: item.product_id,
           product_name: item.product_name,
+          image_url: item.products?.image_url || null,
           total_sold: 0,
           total_revenue: 0,
         };

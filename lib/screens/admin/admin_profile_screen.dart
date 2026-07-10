@@ -5,6 +5,7 @@ import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
 import 'package:uas_prakpemrogramanmobile/providers/auth_provider.dart';
 import 'package:uas_prakpemrogramanmobile/core/services/storage_service.dart';
 import 'package:uas_prakpemrogramanmobile/screens/auth/login_screen.dart';
+import 'package:uas_prakpemrogramanmobile/screens/customer/customer_main_navigation_screen.dart';
 import 'package:uas_prakpemrogramanmobile/screens/onboarding/onboarding_screen.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/custom_text_field.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/loading_widget.dart';
@@ -176,7 +177,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                       if (!mounted) return;
                       Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        MaterialPageRoute(builder: (_) => const CustomerMainNavigationScreen()),
                         (route) => false,
                       );
                     },
@@ -472,7 +473,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                                 await authProvider.logout();
                                 if (!mounted) return;
                                 navigator.pushAndRemoveUntil(
-                                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                  MaterialPageRoute(builder: (_) => const CustomerMainNavigationScreen()),
                                   (route) => false,
                                 );
                                 scaffoldMessenger.showSnackBar(
@@ -499,31 +500,31 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          OutlinedButton(
-                            onPressed: () async {
-                              await StorageService.saveOnboardingCompleted(false);
-                              if (!context.mounted) return;
-                              Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-                                (route) => false,
-                              );
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.textPrimary,
-                              side: const BorderSide(color: AppColors.border, width: 1.5),
-                              minimumSize: const Size(double.infinity, 46),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              "Lihat Onboarding",
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                          // OutlinedButton(
+                          //   onPressed: () async {
+                          //     await StorageService.saveOnboardingCompleted(false);
+                          //     if (!context.mounted) return;
+                          //     Navigator.of(context).pushAndRemoveUntil(
+                          //       MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+                          //       (route) => false,
+                          //     );
+                          //   },
+                          //   style: OutlinedButton.styleFrom(
+                          //     foregroundColor: AppColors.textPrimary,
+                          //     side: const BorderSide(color: AppColors.border, width: 1.5),
+                          //     minimumSize: const Size(double.infinity, 46),
+                          //     shape: RoundedRectangleBorder(
+                          //       borderRadius: BorderRadius.circular(12),
+                          //     ),
+                          //   ),
+                          //   child: const Text(
+                          //     "Lihat Onboarding",
+                          //     style: TextStyle(
+                          //       fontSize: 13,
+                          //       fontWeight: FontWeight.bold,
+                          //     ),
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),

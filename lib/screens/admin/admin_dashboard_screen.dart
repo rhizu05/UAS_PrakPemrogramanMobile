@@ -100,22 +100,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ],
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => _handleRefresh(adminProvider),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFECFDF5), // emerald-50 / light green
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.trending_up,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+                    onPressed: () => _handleRefresh(adminProvider),
                   ),
                 ],
               ),

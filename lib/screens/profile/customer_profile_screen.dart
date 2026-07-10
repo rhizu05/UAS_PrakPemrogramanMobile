@@ -5,6 +5,7 @@ import 'package:uas_prakpemrogramanmobile/core/theme/app_colors.dart';
 import 'package:uas_prakpemrogramanmobile/providers/auth_provider.dart';
 import 'package:uas_prakpemrogramanmobile/core/services/storage_service.dart';
 import 'package:uas_prakpemrogramanmobile/screens/auth/login_screen.dart';
+import 'package:uas_prakpemrogramanmobile/screens/customer/customer_main_navigation_screen.dart';
 import 'package:uas_prakpemrogramanmobile/screens/onboarding/onboarding_screen.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/custom_text_field.dart';
 import 'package:uas_prakpemrogramanmobile/widgets/loading_widget.dart';
@@ -182,7 +183,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                       await authProvider.logout();
                       if (!mounted) return;
                       navigator.pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        MaterialPageRoute(builder: (_) => const CustomerMainNavigationScreen()),
                         (route) => false,
                       );
                     },
@@ -602,7 +603,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
                           await authProvider.logout();
                           if (!mounted) return;
                           navigator.pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            MaterialPageRoute(builder: (_) => const CustomerMainNavigationScreen()),
                             (route) => false,
                           );
                           scaffoldMessenger.showSnackBar(

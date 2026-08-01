@@ -13,7 +13,7 @@ Aplikasi E-commerce berbasis Flutter dengan implementasi State Management Provid
 ---
 
 ## 📱 Deskripsi Aplikasi: Mobile Mart
-**Mobile Mart** adalah aplikasi *e-commerce* modern yang dirancang khusus untuk memfasilitasi transaksi belanja online yang ringkas, cepat, dan aman. Aplikasi ini mengusung tema desain *Light Minimal Modern* dengan nuansa warna biru elektrik yang bersih dan interaksi transisi yang mulus.
+**Mobile Mart** adalah aplikasi *e-commerce* modern yang dirancang khusus untuk memfasilitasi transaksi belanja online yang ringkas, cepat, dan aman. Aplikasi ini mengusung tema desain *Light Minimal Modern* dengan nuansa warna hijau lime yang bersih dan interaksi transisi yang mulus.
 
 Aplikasi ini memiliki sistem otorisasi tingkat peran (Role-Based Authorization) yang memisahkan alur kerja pengguna menjadi dua bagian utama:
 1.  **Customer Flow**: Memungkinkan pembeli mencari produk, memfilter kategori, membaca/menulis ulasan produk, mengelola keranjang belanja, hingga melakukan proses checkout pesanan.
